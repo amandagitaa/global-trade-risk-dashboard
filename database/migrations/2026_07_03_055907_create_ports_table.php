@@ -9,25 +9,83 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+        public function up(): void
     {
         Schema::create('ports', function (Blueprint $table) {
+
             $table->id();
 
-            $table->foreignId('country_id')
-                ->constrained('countries')
-                ->onDelete('cascade');
+            $table->string('country_iso2', 2);
+            $table->string('country_name');
 
-            $table->string('port_name');
-            $table->string('port_code')->nullable();
+            $table->string('name');
+            $table->string('code')->nullable();
+
             $table->string('city')->nullable();
-            $table->string('country_name_cache')->nullable();
+            $table->string('region');
 
-            $table->decimal('latitude', 10, 6);
-            $table->decimal('longitude', 10, 6);
+            $table->decimal('latitude',10,7);
+            $table->decimal('longitude',10,7);
 
-            $table->integer('congestion_score')->default(0);
-            $table->enum('status', ['normal', 'busy', 'congested'])->default('normal');
+            /*
+            |--------------------------------------------------------------------------
+            | Port Information
+            |--------------------------------------------------------------------------
+            */
+
+            $table->string('port_type')
+                ->default('Container Port');
+
+            $table->string('status')
+                ->default('Operational');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Capacity
+            |--------------------------------------------------------------------------
+            */
+
+            $table->string('annual_capacity')->nullable();
+
+            $table->integer('teu_capacity')
+                ->default(0);
+
+            $table->decimal('trade_volume', 12, 2)
+                ->default(0);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Intelligence
+            |--------------------------------------------------------------------------
+            */
+
+            $table->integer('importance_score')
+                ->default(0);
+
+            $table->integer('risk_score')
+                ->default(0);
+
+            $table->string('risk_level')
+                ->default('Low');
+
+            $table->integer('weather_risk')
+                ->default(0);
+
+            $table->integer('political_risk')
+                ->default(0);
+
+            $table->integer('logistic_risk')
+                ->default(0);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Description
+            |--------------------------------------------------------------------------
+            */
+
+            $table->text('main_industries')->nullable();
+
+            $table->text('description')->nullable();
 
             $table->timestamps();
         });

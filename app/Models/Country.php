@@ -41,6 +41,21 @@ class Country extends Model
         return $this->hasOne(RiskScore::class)->latestOfMany();
     }
 
+    public function weatherData(): HasMany
+    {
+        return $this->hasMany(WeatherData::class);
+    }
+
+    public function currencyRates(): HasMany
+    {
+        return $this->hasMany(CurrencyRate::class);
+    }
+
+    public function newsCache(): HasMany
+    {
+        return $this->hasMany(NewsCache::class);
+    }
+
     public function latestWeather()
     {
         return $this->hasOne(WeatherData::class)
@@ -62,5 +77,12 @@ class Country extends Model
     {
         return $this->hasOne(TradeRecommendation::class)
                     ->latestOfMany();
+    }
+
+    public function economicData()
+    {
+        return $this->hasOne(
+            EconomicData::class
+        )->latestOfMany();
     }
 }

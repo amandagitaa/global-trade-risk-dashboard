@@ -19,7 +19,7 @@ class RiskScore extends Model
         'reason'
     ];
 
-    public function country(): BelongsTo
+    public function country()
     {
         return $this->belongsTo(Country::class);
     }

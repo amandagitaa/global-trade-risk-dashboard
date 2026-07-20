@@ -26,4 +26,39 @@ class WeatherData extends Model
     {
         return $this->belongsTo(Country::class);
     }
+
+    public function getWeatherIconAttribute()
+    {
+        $weather = strtolower($this->weather ?? '');
+
+        if (str_contains($weather, 'clear')) {
+            return '☀️';
+        }
+
+        if (str_contains($weather, 'sun')) {
+            return '☀️';
+        }
+
+        if (str_contains($weather, 'cloud')) {
+            return '☁️';
+        }
+
+        if (str_contains($weather, 'rain')) {
+            return '🌧';
+        }
+
+        if (str_contains($weather, 'storm')) {
+            return '⛈';
+        }
+
+        if (str_contains($weather, 'snow')) {
+            return '❄️';
+        }
+
+        if (str_contains($weather, 'fog')) {
+            return '🌫';
+        }
+
+        return '🌤';
+    }
 }

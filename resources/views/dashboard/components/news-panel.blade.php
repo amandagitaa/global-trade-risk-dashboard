@@ -2,43 +2,114 @@
 
     <div class="card-header bg-white border-0">
 
-        <h5 class="fw-bold mb-1">
-            📰 Trade News Intelligence
-        </h5>
+        <div class="d-flex justify-content-between align-items-center">
 
-        <small class="text-muted">
-            Latest global trade related news analysis
-        </small>
+            <div>
+
+                <h5 class="fw-bold text-orange mb-1">
+                    📰 Trade News Intelligence
+                </h5>
+
+                <small class="text-muted">
+                    Latest news and sentiment analysis affecting global trade
+                </small>
+
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+
+                <span class="badge bg-dark">
+
+                    {{ count($newsPanel) }} News
+
+                </span>
+
+                <a href="{{ route('news.index') }}"
+                   class="btn btn-sm btn-outline-warning rounded-pill">
+
+                    View All
+
+                </a>
+
+            </div>
+
+        </div>
 
     </div>
 
-
     <div class="card-body">
 
+        @forelse($newsPanel->take(5) as $news)
 
-        @forelse($newsPanel as $news)
+            @php
 
+                $sentiment = strtolower($news->sentiment);
 
-            <div class="border rounded-3 p-3 mb-3">
+                $sentimentBadge = match($sentiment){
 
+                    'positive' => 'success',
 
-                <h6 class="fw-bold">
+                    'negative' => 'danger',
 
-                    {{ $news->title }}
+                    default => 'warning'
 
-                </h6>
+                };
 
+                $impact = match($sentiment){
 
-                <p class="small text-muted mb-2">
+                    'negative' => 'High Risk',
+
+                    'positive' => 'Low Risk',
+
+                    default => 'Medium Risk'
+
+                };
+
+                $impactBadge = match($impact){
+
+                    'High Risk' => 'danger',
+
+                    'Medium Risk' => 'warning',
+
+                    default => 'success'
+
+                };
+
+                $published = $news->published_at
+                    ?? $news->created_at
+                    ?? null;
+
+            @endphp
+
+            <div class="border rounded-4 p-3 mb-3">
+
+                <div class="d-flex justify-content-between align-items-start mb-2">
+
+                    <h6 class="fw-bold mb-0">
+
+                        {{ Str::limit($news->title,70) }}
+
+                    </h6>
+
+                    @if($published)
+
+                        <small class="text-muted ms-3">
+
+                            {{ \Carbon\Carbon::parse($published)->diffForHumans() }}
+
+                        </small>
+
+                    @endif
+
+                </div>
+
+                <p class="small text-muted mb-3">
 
                     {{ Str::limit($news->description,120) }}
 
                 </p>
 
-
-
-                <div class="d-flex justify-content-between">
-
+                <div class="d-flex flex-wrap gap-2">
 
                     <span class="badge bg-secondary">
 
@@ -46,47 +117,31 @@
 
                     </span>
 
+                    <span class="badge bg-{{ $sentimentBadge }}">
 
+                        {{ ucfirst($news->sentiment) }}
 
-                    @if($news->sentiment == 'positive')
+                    </span>
 
-                        <span class="badge bg-success">
-                            Positive
-                        </span>
+                    <span class="badge bg-{{ $impactBadge }}">
 
-                    @elseif($news->sentiment == 'negative')
+                        {{ $impact }}
 
-                        <span class="badge bg-danger">
-                            Negative
-                        </span>
-
-                    @else
-
-                        <span class="badge bg-warning text-dark">
-                            Neutral
-                        </span>
-
-                    @endif
-
+                    </span>
 
                 </div>
 
-
             </div>
-
 
         @empty
 
-
-            <div class="text-center text-muted py-3">
+            <div class="text-center py-5 text-muted">
 
                 No news available.
 
             </div>
 
-
         @endforelse
-
 
     </div>
 

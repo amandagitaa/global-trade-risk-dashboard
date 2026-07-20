@@ -41,7 +41,9 @@ class CountryService
 
                     'language'      => $item['languages'][0]['name'] ?? null,
 
-                    'flag'          => $item['flags']['png'] ?? null,
+                    'flag'          => isset($item['alpha2Code']) 
+                        ? 'https://flagcdn.com/w320/' . strtolower($item['alpha2Code']) . '.png' 
+                        : ($item['flags']['png'] ?? null),
 
                     'population'    => $item['population'] ?? 0,
 

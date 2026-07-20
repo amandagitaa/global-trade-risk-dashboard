@@ -23,7 +23,7 @@
 
     </a>
 
-    <a href="{{ route('countries.index') }}"
+        <a href="{{ route('countries.index') }}"
        class="{{ request()->routeIs('countries.*') ? 'active' : '' }}">
 
         <i class="bi bi-globe2"></i>
@@ -32,43 +32,63 @@
 
     </a>
 
-    <a href="#">
+    <a href="{{ route('compare.index') }}"
+       class="{{ request()->routeIs('compare.*') ? 'active' : '' }}">
 
-        <i class="bi bi-cloud-sun"></i>
+        <i class="bi bi-arrow-left-right"></i>
 
-        Weather
+        Compare
 
     </a>
 
-    <a href="#">
+    <a href="{{ route('weather.index') }}"
+        class="sidebar-link {{ request()->routeIs('weather.*') ? 'active' : '' }}">
+        <i class="bi bi-cloud-sun"></i>
+            <span>Weather</span>
+    </a>
+
+    <a href="{{ route('currency.index') }}"
+    class="nav-link {{ request()->routeIs('currency.*') ? 'active' : '' }}">
 
         <i class="bi bi-currency-exchange"></i>
 
-        Currency
+        <span>Currency</span>
 
     </a>
 
-    <a href="#">
+    <a href="{{ route('economy.index') }}"
+    class="sidebar-link {{ request()->routeIs('economy.*') ? 'active' : '' }}">
 
         <i class="bi bi-graph-up-arrow"></i>
 
-        Economy
+        <span>Economy</span>
 
     </a>
 
-    <a href="#">
+    <a href="{{ route('news.index') }}"
+    class="sidebar-link {{ request()->routeIs('news.*') ? 'active' : '' }}">
 
         <i class="bi bi-newspaper"></i>
 
-        News
+        <span>News</span>
 
     </a>
 
-    <a href="#">
+    <a href="{{ route('ports.index') }}"
+    class="sidebar-link {{ request()->routeIs('ports.*') ? 'active' : '' }}">
 
-        <i class="bi bi-truck"></i>
+        <i class="bi bi-geo-alt"></i>
 
-        Ports
+        <span>Ports</span>
+
+    </a>
+
+    <a href="{{ route('trade-planner.index') }}"
+    class="sidebar-link {{ request()->routeIs('trade-planner.*') ? 'active' : '' }}">
+
+        <i class="bi bi-water" style="font-size: 20px; width: 24px; text-align: center;"></i>
+
+        <span style="margin-left: 2px;">Trade Planner</span>
 
     </a>
 
@@ -76,7 +96,8 @@
         Decision Support
     </div>
 
-    <a href="#">
+    <a href="{{ route('risk-analysis.index') }}"
+    class="{{ request()->routeIs('risk-analysis.*') ? 'active' : '' }}">
 
         <i class="bi bi-exclamation-triangle"></i>
 
@@ -84,11 +105,12 @@
 
     </a>
 
-    <a href="#">
+    <a href="{{ route('watch-list.index') }}"
+    class="sidebar-link {{ request()->routeIs('watch-list.*') ? 'active' : '' }}">
 
-        <i class="bi bi-lightbulb"></i>
+        <i class="bi bi-star"></i>
 
-        Recommendation
+        <span>Watch List</span>
 
     </a>
 
@@ -96,27 +118,17 @@
         Reports
     </div>
 
-    <a href="#">
-
+    <a href="{{ route('reports.index') }}"
+        class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
         <i class="bi bi-file-earmark-text"></i>
-
-        Reports
-
-    </a>
-
-    <a href="#">
-
-        <i class="bi bi-clock-history"></i>
-
-        Risk History
-
+        <span>Reports</span>
     </a>
 
     <div class="menu-title">
         Account
     </div>
 
-    <a href="#">
+    <a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'active' : '' }}">
 
         <i class="bi bi-person-circle"></i>
 
@@ -140,12 +152,16 @@
 
     </div>
 
-    <a href="#">
+    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
 
         <i class="bi bi-box-arrow-right"></i>
 
         Logout
 
     </a>
+
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+        @csrf
+    </form>
 
 </div>

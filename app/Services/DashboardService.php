@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Country;
+use App\Models\Port;
 use App\Models\RiskScore;
 use App\Models\TradeRecommendation;
 use App\Models\WeatherData;
@@ -17,74 +18,17 @@ class DashboardService
      * ==========================================================
      */
 
-    public function buildDashboard(): array
+    public function buildDashboard($countryId = null): array
     {
         return [
-
-            /*
-            |--------------------------------------------------------------------------
-            | Summary
-            |--------------------------------------------------------------------------
-            */
-
-            'summary' => $this->getSummary(),
-
-            /*
-            |--------------------------------------------------------------------------
-            | World Map
-            |--------------------------------------------------------------------------
-            */
-
-            'mapCountries' => $this->getMapCountries(),
-
-            /*
-            |--------------------------------------------------------------------------
-            | Risk Distribution
-            |--------------------------------------------------------------------------
-            */
-
-            'riskDistribution' => $this->getRiskDistribution(),
-
-            /*
-            |--------------------------------------------------------------------------
-            | Highest Risk
-            |--------------------------------------------------------------------------
-            */
-
-            'highestRiskCountries' => $this->getHighestRiskCountries(),
-
-/*
-|--------------------------------------------------------------------------
-| Recommendation
-|--------------------------------------------------------------------------
-*/
-
-'recommendations' => $this->getRecommendations(),
-
-            /*
-            |--------------------------------------------------------------------------
-            | Weather
-            |--------------------------------------------------------------------------
-            */
-
-            'weatherPanel' => $this->getWeatherPanel(),
-
-            /*
-            |--------------------------------------------------------------------------
-            | Currency
-            |--------------------------------------------------------------------------
-            */
-
-            'currencyPanel' => $this->getCurrencyPanel(),
-
-            /*
-            |--------------------------------------------------------------------------
-            | News
-            |--------------------------------------------------------------------------
-            */
-
-            'newsPanel' => $this->getNewsPanel()
-
+            'summary' => $this->getSummary($countryId),
+            'mapCountries' => $this->getMapCountries($countryId),
+            'riskDistribution' => $this->getRiskDistribution($countryId),
+            'highestRiskCountries' => $this->getHighestRiskCountries($countryId),
+            'portRisks' => $this->getPortRisks($countryId),
+            'weatherPanel' => $this->getWeatherPanel($countryId),
+            'currencyPanel' => $this->getCurrencyPanel($countryId),
+            'newsPanel' => $this->getNewsPanel($countryId)
         ];
     }
 
@@ -94,38 +38,42 @@ class DashboardService
      * ==========================================================
      */
 
-    private function getSummary(): array
+    private function getSummary($countryId): array
     {
-        $totalCountries = Country::count();
+        $countryQuery = Country::query();
+        $riskQuery = RiskScore::query();
+        $weatherQuery = WeatherData::query();
+        $currencyQuery = CurrencyRate::query();
+        $recQuery = TradeRecommendation::query();
 
-        $averageRisk = RiskScore::avg('final_score') ?? 0;
+        if ($countryId) {
+            $countryQuery->where('id', $countryId);
+            $riskQuery->where('country_id', $countryId);
+            $weatherQuery->where('country_id', $countryId);
+            $currencyQuery->where('country_id', $countryId);
+            $recQuery->where('country_id', $countryId);
+        }
 
-        $critical = RiskScore::where('risk_level', 'critical')->count();
+        $totalCountries = $countryQuery->count();
+        $averageRisk = clone $riskQuery;
+        $averageRisk = $averageRisk->avg('final_score') ?? 0;
 
-        $dangerous = RiskScore::where('risk_level', 'dangerous')->count();
+        $critical = (clone $riskQuery)->where('risk_level', 'critical')->count();
+        $dangerous = (clone $riskQuery)->where('risk_level', 'dangerous')->count();
+        $alert = (clone $riskQuery)->where('risk_level', 'alert')->count();
 
-        $alert = RiskScore::where('risk_level', 'alert')->count();
-
-        $stable = RiskScore::where('risk_level', 'stable')->count();
-
-        $safe = RiskScore::where('risk_level', 'safe')->count();
+        $riskCountries = $critical + $dangerous + $alert;
 
         return [
-
             'totalCountries' => $totalCountries,
-
+            'weatherMonitoring' => $weatherQuery->count(),
+            'currencyMonitoring' => $currencyQuery->count(),
+            'recommendationCount' => $recQuery->count(),
             'averageRisk' => round($averageRisk, 2),
-
             'critical' => $critical,
-
             'dangerous' => $dangerous,
-
             'alert' => $alert,
-
-            'stable' => $stable,
-
-            'safe' => $safe
-
+            'riskCountries' => $riskCountries
         ];
     }
 
@@ -135,21 +83,15 @@ class DashboardService
      * ==========================================================
      */
 
-    private function getRiskDistribution()
+    private function getRiskDistribution($countryId)
     {
-        return RiskScore::selectRaw('
-
-                risk_level,
-
-                COUNT(*) as total
-
-            ')
-
-            ->groupBy('risk_level')
-
-            ->orderBy('risk_level')
-
-            ->get();
+        $query = RiskScore::selectRaw('risk_level, COUNT(*) as total');
+        
+        if ($countryId) {
+            $query->where('country_id', $countryId);
+        }
+        
+        return $query->groupBy('risk_level')->orderBy('risk_level')->get();
     }
 
     /**
@@ -158,44 +100,37 @@ class DashboardService
      * ==========================================================
      */
 
-    private function getHighestRiskCountries()
+    private function getHighestRiskCountries($countryId)
     {
-        return Country::with([
+        $query = Country::with(['latestRisk'])->whereHas('latestRisk');
+        
+        if ($countryId) {
+            $query->where('id', $countryId);
+        }
 
-                'latestRisk'
-
-            ])
-
-            ->whereHas('latestRisk')
-
-            ->get()
-
+        return $query->get()
             ->sortByDesc(function ($country) {
-
                 return $country->latestRisk->final_score;
-
             })
-
             ->take(10)
-
             ->values();
     }
 
         /**
      * ==========================================================
-     * TRADE RECOMMENDATIONS
+     * PORT RISK MONITORING
      * ==========================================================
      */
 
-    private function getRecommendations()
+    private function getPortRisks($countryId)
     {
-       return TradeRecommendation::with('country')
-
-        ->latest()
-
-        ->take(10)
-
-        ->get();
+        $query = Port::query();
+        
+        if ($countryId) {
+            $query->where('country_id', $countryId);
+        }
+        
+        return $query->orderByDesc('risk_score')->take(10)->get();
     }
 
     /**
@@ -204,36 +139,14 @@ class DashboardService
      * ==========================================================
      */
 
-    private function getMapCountries()
+    private function getMapCountries($countryId)
     {
-        return Country::select(
+        $query = Country::select('id', 'country_name', 'country_code', 'flag', 'currency_code', 'latitude', 'longitude', 'region')
+            ->with(['latestRisk', 'recommendation', 'latestWeather', 'latestCurrency']);
+            
+        // intentionally NOT filtering by countryId to keep all markers on map
 
-                'id',
-                'country_name',
-                'country_code',
-                'flag',
-                'currency_code',
-                'latitude',
-                'longitude',
-                'region'
-
-            )
-
-            ->with([
-
-                'latestRisk',
-
-                'recommendation',
-
-                'latestWeather',
-
-                'latestCurrency'
-
-            ])
-
-            ->orderBy('country_name')
-
-            ->get();
+        return $query->orderBy('country_name')->get();
     }
 
     /**
@@ -242,15 +155,15 @@ class DashboardService
      * ==========================================================
      */
 
-    private function getWeatherPanel()
+    private function getWeatherPanel($countryId)
     {
-        return WeatherData::with('country')
-
-            ->latest('recorded_at')
-
-            ->take(10)
-
-            ->get();
+        $query = WeatherData::with('country')->latest('recorded_at');
+        
+        if ($countryId) {
+            $query->where('country_id', $countryId);
+        }
+        
+        return $query->take(10)->get();
     }
 
     /**
@@ -259,15 +172,15 @@ class DashboardService
      * ==========================================================
      */
 
-    private function getCurrencyPanel()
+    private function getCurrencyPanel($countryId)
     {
-        return CurrencyRate::with('country')
-
-            ->latest('recorded_at')
-
-            ->take(10)
-
-            ->get();
+        $query = CurrencyRate::with('country')->latest('recorded_at');
+        
+        if ($countryId) {
+            $query->where('country_id', $countryId);
+        }
+        
+        return $query->take(10)->get();
     }
 
     /**
@@ -276,14 +189,14 @@ class DashboardService
      * ==========================================================
      */
 
-    private function getNewsPanel()
+    private function getNewsPanel($countryId)
     {
-        return NewsCache::with('country')
-
-            ->latest('published_at')
-
-            ->take(10)
-
-            ->get();
+        $query = NewsCache::with('country')->latest('published_at');
+        
+        if ($countryId) {
+            $query->where('country_id', $countryId);
+        }
+        
+        return $query->take(10)->get();
     }
 }

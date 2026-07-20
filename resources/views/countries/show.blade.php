@@ -14,6 +14,22 @@
 
     </div>
 
+    <div class="row mt-4 align-items-stretch">
+
+        <div class="col-lg-7 d-flex">
+
+            @include('countries.components.map')
+
+        </div>
+
+        <div class="col-lg-5 d-flex">
+
+            @include('countries.components.port_info')
+
+        </div>
+
+    </div>
+
     <div class="row mt-4">
 
         <div class="col-lg-8">
@@ -54,6 +70,16 @@
 
         </div>
 
+    </div>
+
+    <div class="row mt-4 mb-5">
+        <div class="col-lg-12 text-end">
+            <a href="{{ route('countries.index') }}"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+        </div>
     </div>
 
 </div>

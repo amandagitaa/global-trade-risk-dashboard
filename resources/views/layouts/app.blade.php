@@ -22,6 +22,9 @@
     <link rel="stylesheet"
           href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -140,11 +143,10 @@
         */
 
         .main{
-
+            @auth
             margin-left:260px;
-
+            @endauth
             min-height:100vh;
-
         }
 
         /*
@@ -287,13 +289,17 @@
 
 <body>
 
-@include('layouts.sidebar')
+@auth
+    @include('layouts.sidebar')
+@endauth
 
 <div class="main">
 
-@include('layouts.navbar')
+@auth
+    @include('layouts.navbar')
+@endauth
 
-<div class="container-fluid p-4">
+<div class="{{ Auth::check() ? 'container-fluid p-4' : '' }}">
 
 @yield('content')
 
@@ -306,6 +312,8 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 @stack('scripts')
 

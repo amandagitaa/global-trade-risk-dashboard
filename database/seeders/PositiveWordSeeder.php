@@ -2,23 +2,87 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+
 class PositiveWordSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+
     public function run(): void
     {
-        DB::table('positive_words')->insert([
-            ['word' => 'growth', 'weight' => 2],
-            ['word' => 'stable', 'weight' => 2],
-            ['word' => 'profit', 'weight' => 2],
-            ['word' => 'improve', 'weight' => 1],
-            ['word' => 'efficient', 'weight' => 1],
-        ]);
+
+        $words = [
+
+            [
+                'word' => 'growth',
+                'weight' => 2
+            ],
+
+            [
+                'word' => 'stable',
+                'weight' => 2
+            ],
+
+            [
+                'word' => 'profit',
+                'weight' => 2
+            ],
+
+            [
+                'word' => 'improve',
+                'weight' => 1
+            ],
+
+            [
+                'word' => 'efficient',
+                'weight' => 1
+            ],
+
+            [
+                'word' => 'increase',
+                'weight' => 1
+            ],
+
+            [
+                'word' => 'success',
+                'weight' => 2
+            ],
+
+            [
+                'word' => 'expansion',
+                'weight' => 2
+            ],
+
+            [
+                'word' => 'investment',
+                'weight' => 1
+            ],
+
+            [
+                'word' => 'innovation',
+                'weight' => 2
+            ],
+
+        ];
+
+
+        foreach($words as $word)
+        {
+
+            DB::table('positive_words')
+                ->updateOrInsert(
+
+                    [
+                        'word' => $word['word']
+                    ],
+
+                    $word
+
+                );
+
+        }
+
     }
+
 }

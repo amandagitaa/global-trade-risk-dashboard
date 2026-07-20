@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g transform="translate(0, 30)">
+    <!-- Bridge / Superstructure -->
+    <rect x="6" y="2" width="22" height="30" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1.5" />
+    <rect x="10" y="-8" width="14" height="10" fill="#95a5a6" />
+    <path d="M 6 12 L 28 12" stroke="#34495e" stroke-width="4" />
+    <path d="M 6 22 L 28 22" stroke="#34495e" stroke-width="4" />
+
+    <!-- Containers -->
+    <!-- Layer 1 -->
+    <rect x="32" y="16" width="13" height="16" fill="#e74c3c" stroke="#c0392b" stroke-width="1" />
+    <rect x="47" y="16" width="13" height="16" fill="#f1c40f" stroke="#f39c12" stroke-width="1" />
+    <rect x="62" y="16" width="13" height="16" fill="#3498db" stroke="#2980b9" stroke-width="1" />
+    <rect x="77" y="16" width="13" height="16" fill="#2ecc71" stroke="#27ae60" stroke-width="1" />
+    
+    <!-- Layer 2 -->
+    <rect x="32" y="0" width="13" height="16" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" />
+    <rect x="47" y="0" width="13" height="16" fill="#e67e22" stroke="#d35400" stroke-width="1" />
+    <rect x="62" y="0" width="13" height="16" fill="#1abc9c" stroke="#16a085" stroke-width="1" />
+    <rect x="77" y="0" width="13" height="16" fill="#e74c3c" stroke="#c0392b" stroke-width="1" />
+
+    <!-- Hull Top (White) -->
+    <path d="M 0 32 L 88 32 L 98 12 L 0 12 Z" fill="#ffffff" stroke="#bdc3c7" stroke-width="1" />
+    
+    <!-- Hull Bottom (Red) -->
+    <path d="M 0 50 L 80 50 L 88 32 L 0 32 Z" fill="#c0392b" />
+  </g>
+</svg>

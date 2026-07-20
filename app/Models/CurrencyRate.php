@@ -15,7 +15,13 @@ class CurrencyRate extends Model
         'target_currency',
         'exchange_rate',
         'change_percentage',
-        'recorded_at'
+        'recorded_at',
+    ];
+
+    protected $casts = [
+        'exchange_rate'     => 'float',
+        'change_percentage' => 'float',
+        'recorded_at'       => 'datetime',
     ];
 
     public function country(): BelongsTo

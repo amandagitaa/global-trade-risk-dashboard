@@ -79,19 +79,10 @@
             </tr>
 
             <tr>
-
-                <th>
-
-                    Economy Risk
-
-                </th>
-
+                <th>Economy Risk</th>
                 <td>
-
-                    {{ $risk->economic_score ?? '-' }}
-
+                    {{ number_format($risk->economic_score ?? 0, 2) }}
                 </td>
-
             </tr>
 
             <tr class="table-warning">

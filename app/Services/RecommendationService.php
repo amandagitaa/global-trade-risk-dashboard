@@ -4,75 +4,265 @@ namespace App\Services;
 
 use App\Models\Country;
 use App\Models\TradeRecommendation;
+use App\Services\Trade\RiskAnalysisService;
 
 class RecommendationService
 {
-    public function generate(Country $country)
+    protected RiskAnalysisService $riskAnalysis;
+
+    public function __construct(
+        RiskAnalysisService $riskAnalysis
+    ) {
+        $this->riskAnalysis = $riskAnalysis;
+    }
+
+    public function generate(Country $country): bool
     {
-        $risk=$country->latestRisk;
+        /*
+        |--------------------------------------------------------------------------
+        | Load Relations
+        |--------------------------------------------------------------------------
+        */
 
-        $weather=$country->weather;
+        $country->load([
 
-        $currency=$country->currency;
+            'latestWeather',
 
-        $port=$country->ports()
-            ->orderByDesc('congestion_score')
+            'latestCurrency',
+
+            'latestNews',
+
+            'ports',
+
+            'economicData'
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Risk Analysis
+        |--------------------------------------------------------------------------
+        */
+
+        $risk = $this->riskAnalysis->calculate($country);
+
+        $finalScore = $risk['final_score'];
+
+        $riskLevel = $risk['risk_level'];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prepare Variables
+        |--------------------------------------------------------------------------
+        */
+
+        $tradeAction = 'Maintain Trade';
+
+        $priority = 'Medium';
+
+        $recommendations = [];
+
+        $reasons = [];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Main Recommendation
+        |--------------------------------------------------------------------------
+        */
+
+        if ($finalScore <= 20) {
+
+            $tradeAction = 'Expand Trade';
+
+            $priority = 'Low';
+
+        } elseif ($finalScore <= 40) {
+
+            $tradeAction = 'Maintain Trade';
+
+            $priority = 'Medium';
+
+        } elseif ($finalScore <= 60) {
+
+            $tradeAction = 'Monitor Trade';
+
+            $priority = 'Medium';
+
+        } elseif ($finalScore <= 80) {
+
+            $tradeAction = 'Reduce Exposure';
+
+            $priority = 'High';
+
+        } else {
+
+            $tradeAction = 'Suspend Trade';
+
+            $priority = 'Critical';
+
+        }
+
+                /*
+        |--------------------------------------------------------------------------
+        | WEATHER RECOMMENDATION
+        |--------------------------------------------------------------------------
+        */
+
+        $weather = $country->latestWeather;
+
+        if ($weather) {
+
+            $condition = strtolower($weather->weather ?? '');
+
+            if (str_contains($condition, 'storm')) {
+
+                $recommendations[] = 'Delay shipment due to storm risk.';
+                $reasons[] = 'Severe storm conditions detected.';
+
+            } elseif (str_contains($condition, 'rain')) {
+
+                $recommendations[] = 'Prepare for possible shipping delay.';
+                $reasons[] = 'Heavy rain may affect logistics.';
+
+            } elseif (str_contains($condition, 'cloud')) {
+
+                $recommendations[] = 'Normal shipment with weather monitoring.';
+                $reasons[] = 'Cloudy weather has low impact.';
+
+            } else {
+
+                $recommendations[] = 'Weather conditions are favorable.';
+                $reasons[] = 'No significant weather disruption detected.';
+
+            }
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CURRENCY RECOMMENDATION
+        |--------------------------------------------------------------------------
+        */
+
+        $currency = $country->latestCurrency;
+
+        if ($currency) {
+
+            $change = abs($currency->change_percentage ?? 0);
+
+            if ($change >= 8) {
+
+                $recommendations[] = 'Review import/export pricing.';
+                $reasons[] = 'Exchange rate volatility is very high.';
+
+            } elseif ($change >= 5) {
+
+                $recommendations[] = 'Monitor exchange rate daily.';
+                $reasons[] = 'Currency movement is increasing.';
+
+            } else {
+
+                $recommendations[] = 'Currency is relatively stable.';
+                $reasons[] = 'Exchange rate fluctuation is low.';
+
+            }
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ECONOMY RECOMMENDATION
+        |--------------------------------------------------------------------------
+        */
+
+        $economy = $country->economicData;
+
+        if ($economy) {
+
+            if (($economy->inflation ?? 0) >= 10) {
+
+                $recommendations[] = 'Increase price monitoring.';
+                $reasons[] = 'High inflation may increase trade costs.';
+
+            }
+
+            if (($economy->gdp ?? 0) >= 5000000000000) {
+
+                $recommendations[] = 'Large market opportunity.';
+                $reasons[] = 'Country has a very strong economy.';
+
+            }
+
+            if (($economy->exports ?? 0) > ($economy->imports ?? 0)) {
+
+                $recommendations[] = 'Trade environment is favorable.';
+                $reasons[] = 'Country has a positive trade balance.';
+
+            }
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | PORT RECOMMENDATION
+        |--------------------------------------------------------------------------
+        */
+
+        $port = $country->ports
+            ->sortByDesc('congestion')
             ->first();
 
-        $news=$country->latestNews;
+        if ($port) {
 
-        $tradeAction='Import Normally';
+            if (($port->congestion ?? 0) >= 80) {
 
-        $priority='Low';
+                $recommendations[] = 'Use an alternative port.';
+                $reasons[] = 'Port congestion is extremely high.';
 
-        $recommendation=[];
+            } elseif (($port->congestion ?? 0) >= 50) {
 
-        $reason=[];
+                $recommendations[] = 'Expect possible loading delays.';
+                $reasons[] = 'Moderate port congestion detected.';
+
+            }
+
+            if (strtolower($port->status ?? '') === 'closed') {
+
+                $recommendations[] = 'Avoid this port temporarily.';
+                $reasons[] = 'Port is currently closed.';
+
+            }
+
+        }
 
         /*
-        ============================================
-        Risk
-        ============================================
+        |--------------------------------------------------------------------------
+        | NEWS RECOMMENDATION
+        |--------------------------------------------------------------------------
         */
 
-        if($risk){
+        $news = $country->latestNews;
 
-            switch($risk->risk_level){
+        if ($news) {
 
-                case 'safe':
+            switch (strtolower($news->sentiment ?? 'neutral')) {
 
-                    $tradeAction='Import Now';
+                case 'negative':
 
+                    $recommendations[] = 'Monitor geopolitical developments.';
+                    $reasons[] = 'Negative international news detected.';
                     break;
 
-                case 'stable':
+                case 'positive':
 
-                    $tradeAction='Import Normally';
-
+                    $recommendations[] = 'Trade outlook is improving.';
+                    $reasons[] = 'Recent news sentiment is positive.';
                     break;
 
-                case 'alert':
+                default:
 
-                    $tradeAction='Monitor Daily';
-
-                    $priority='Medium';
-
-                    break;
-
-                case 'dangerous':
-
-                    $tradeAction='Delay Shipment';
-
-                    $priority='High';
-
-                    break;
-
-                case 'critical':
-
-                    $tradeAction='Stop Trade';
-
-                    $priority='Critical';
-
+                    $recommendations[] = 'Continue monitoring news.';
+                    $reasons[] = 'No major news impact detected.';
                     break;
 
             }
@@ -80,134 +270,100 @@ class RecommendationService
         }
 
         /*
-        ============================================
-        Weather
-        ============================================
+        |--------------------------------------------------------------------------
+        | Default Recommendation
+        |--------------------------------------------------------------------------
         */
 
-        if($weather){
+        if (empty($recommendations)) {
 
-            if($weather->weather_status=='storm'){
-
-                $recommendation[]='Delay shipment 1-2 days';
-
-                $reason[]='Storm detected';
-
-            }
-
-            if($weather->weather_status=='extreme'){
-
-                $recommendation[]='Avoid sea shipment';
-
-                $reason[]='Extreme weather';
-
-            }
+            $recommendations[] = 'Continue normal trade operations.';
+            $recommendations[] = 'Maintain routine monitoring.';
+            $reasons[] = 'No significant risk factors detected.';
 
         }
+
+                /*
+        |--------------------------------------------------------------------------
+        | Remove Duplicate Recommendation
+        |--------------------------------------------------------------------------
+        */
+
+        $recommendations = array_values(array_unique($recommendations));
+
+        $reasons = array_values(array_unique($reasons));
 
         /*
-        ============================================
-        Currency
-        ============================================
+        |--------------------------------------------------------------------------
+        | Save Recommendation
+        |--------------------------------------------------------------------------
         */
-
-        if($currency){
-
-            if($currency->status=='cost_surge'){
-
-                $recommendation[]='Monitor exchange rate';
-
-                $reason[]='Currency surge';
-
-            }
-
-            if($currency->status=='trade_critical'){
-
-                $recommendation[]='Recalculate import cost';
-
-                $reason[]='Currency volatility';
-
-            }
-
-        }
-
-        /*
-        ============================================
-        Port
-        ============================================
-        */
-
-        if($port){
-
-            if($port->congestion_score>=70){
-
-                $recommendation[]='Use alternative port';
-
-                $reason[]='High port congestion';
-
-            }
-
-        }
-
-        /*
-        ============================================
-        News
-        ============================================
-        */
-
-        if($news){
-
-            if($news->sentiment=='negative'){
-
-                $recommendation[]='Monitor geopolitical news';
-
-                $reason[]='Negative international news';
-
-            }
-
-        }
-
-        /*
-        ============================================
-        Default Recommendation
-        ============================================
-        */
-
-        if(empty($recommendation)){
-
-            $recommendation[]='Safe to Import';
-
-            $recommendation[]='Suggested Shipping: Next 5 Days';
-
-            $recommendation[]='Continue Monitoring';
-
-        }
 
         TradeRecommendation::updateOrCreate(
 
             [
 
-                'country_id'=>$country->id
+                'country_id' => $country->id,
 
             ],
 
             [
 
-                'trade_action'=>$tradeAction,
+                'trade_action' => $tradeAction,
 
-                'priority'=>$priority,
+                'priority' => $priority,
 
-                'recommendation'=>implode("\n",$recommendation),
+                'recommendation' => implode("\n", $recommendations),
 
-                'business_reason'=>implode("\n",$reason),
+                'business_reason' => implode("\n", $reasons),
 
-                'generated_at'=>now()
+                'risk_level' => $riskLevel,
+
+                'risk_score' => $finalScore,
+
+                'generated_at' => now(),
 
             ]
 
         );
 
         return true;
+    }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Preview Recommendation (Optional)
+    |--------------------------------------------------------------------------
+    */
+
+    public function preview(Country $country): array
+    {
+        $country->load([
+            'latestWeather',
+            'latestCurrency',
+            'latestNews',
+            'ports',
+            'economicData'
+        ]);
+
+        $risk = $this->riskAnalysis->calculate($country);
+
+        return [
+
+            'risk_score' => $risk['final_score'],
+
+            'risk_level' => $risk['risk_level'],
+
+            'trade_action' => TradeRecommendation::where(
+                'country_id',
+                $country->id
+            )->value('trade_action'),
+
+            'priority' => TradeRecommendation::where(
+                'country_id',
+                $country->id
+            )->value('priority'),
+
+        ];
     }
 }

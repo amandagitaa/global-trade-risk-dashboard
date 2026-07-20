@@ -3,24 +3,65 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Port extends Model
 {
     protected $fillable = [
-        'country_id',
-        'port_name',
-        'port_code',
+
+        'country_iso2',
+        'country_name',
+
+        'name',
+        'code',
         'city',
-        'country_name_cache',
+        'region',
+
         'latitude',
         'longitude',
-        'congestion_score',
-        'status'
+
+        'port_type',
+        'status',
+
+        'annual_capacity',
+        'teu_capacity',
+        'trade_volume',
+
+        'importance_score',
+
+        'risk_score',
+        'risk_level',
+
+        'weather_risk',
+        'political_risk',
+        'logistic_risk',
+
+        'main_industries',
+        'description',
+
+        'traffic_level',
+        'shipping_routes',
+        'ai_recommendation'
+
     ];
 
-    public function country(): BelongsTo
+    public function country()
     {
         return $this->belongsTo(Country::class);
+    }
+
+    public function ships()
+    {
+        return $this->hasMany(
+            Ship::class,
+            'current_port_id'
+        );
+    }
+
+    public function routes()
+    {
+        return $this->hasMany(
+            ShippingRoute::class,
+            'origin_port_id'
+        );
     }
 }

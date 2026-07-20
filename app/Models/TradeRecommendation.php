@@ -18,13 +18,19 @@ class TradeRecommendation extends Model
 
         'business_reason',
 
+        'risk_level',
+
+        'risk_score',
+
         'generated_at'
 
     ];
 
-    protected $casts=[
+    protected $casts = [
 
-        'generated_at'=>'datetime'
+        'generated_at' => 'datetime',
+
+        'risk_score' => 'float'
 
     ];
 
@@ -32,5 +38,4 @@ class TradeRecommendation extends Model
     {
         return $this->belongsTo(Country::class);
     }
-    
 }
