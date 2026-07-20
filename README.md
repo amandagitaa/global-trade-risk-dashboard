@@ -120,16 +120,6 @@ php artisan serve
 
 ---
 
-## 🔑 Default Login Credential
-
-Gunakan kredensial berikut untuk masuk sebagai Administrator (setelah perintah `db:seed` dijalankan):
-
-- **Email**: `admin@company.com`
-- **Password**: `password`
-
-*(Catatan: Kredensial di atas merupakan data dasar/awal. Silakan sesuaikan kembali apabila konfigurasi lokal seeder Anda berbeda).*
-
----
 
 ## 📂 Struktur Project
 
@@ -149,32 +139,6 @@ Gambaran garis besar struktur fail dan direktori kunci pada *platform* ini:
 
 ---
 
-## 📸 Screenshot
-
-Berikut adalah visualisasi beberapa antarmuka kunci pada *platform* ini:
-
-### Dashboard User
-*(Sediakan tempat untuk Placeholder / Screenshot kelak)*
-`![Dashboard User](placeholder-dashboard.png)`
-
-### Countries Monitoring
-*(Sediakan tempat untuk Placeholder / Screenshot kelak)*
-`![Countries Monitoring](placeholder-countries.png)`
-
-### Trade Planner
-*(Sediakan tempat untuk Placeholder / Screenshot kelak)*
-`![Trade Planner](placeholder-trade-planner.png)`
-
-### Risk Analysis
-*(Sediakan tempat untuk Placeholder / Screenshot kelak)*
-`![Risk Analysis](placeholder-risk-analysis.png)`
-
-### Admin Dashboard
-*(Sediakan tempat untuk Placeholder / Screenshot kelak)*
-`![Admin Dashboard](placeholder-admin-dashboard.png)`
-
----
-
 ## 🗺️ Roadmap Pengembangan Masa Depan
 
 Kami memiliki visi untuk terus mempertajam dan memperluas kapabilitas intelijen pada *platform* ini:
@@ -184,12 +148,6 @@ Kami memiliki visi untuk terus mempertajam dan memperluas kapabilitas intelijen 
 - [ ] **Historical Risk Trends**: Grafik proyeksi dan komparasi tren risiko jangka panjang.
 - [ ] **Email Notification**: Lansiran sistem (*Alert*) langsung menuju kotak masuk surel.
 - [ ] **Export Enhancement**: Ekspansi dukungan unduhan *Report* (CSV/PDF) yang komprehensif.
-
----
-
-## 📄 Lisensi
-
-*Global Trade Risk Intelligence Platform* dilisensikan di bawah lisensi [MIT License](https://opensource.org/licenses/MIT). Anda diizinkan menggunakan, menyalin, mengubah, serta mendistribusikan salinan *platform* ini selagi mencantumkan atribusi yang sesuai.
 
 ---
 
