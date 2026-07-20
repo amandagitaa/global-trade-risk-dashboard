@@ -57,8 +57,8 @@ class PortSeeder extends Seeder
                     'code'=>$port['code']
                 ],
                 [
-                    'country_iso2' => $country->iso2,
-                    'country_name' => $country->name,
+                    'country_iso2' => $country->country_code,
+'country_name' => $country->country_name,
 
                     'name'=>$port['name'],
                     'city'=>$port['city'],
