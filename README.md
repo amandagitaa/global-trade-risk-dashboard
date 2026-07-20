@@ -120,7 +120,6 @@ php artisan serve
 
 ---
 
-
 ## 📂 Struktur Project
 
 Gambaran garis besar struktur fail dan direktori kunci pada *platform* ini:
