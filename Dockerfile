@@ -3,16 +3,24 @@ FROM php:8.2-cli
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
+    zip \
+    libzip-dev \
     curl \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
     nodejs \
     npm
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg
 
-RUN docker-php-ext-install gd pdo pdo_mysql
+RUN docker-php-ext-install \
+    gd \
+    zip \
+    pdo \
+    pdo_mysql
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
