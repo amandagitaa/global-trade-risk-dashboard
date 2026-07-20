@@ -1,3 +1,4 @@
+# Railway Build v2
 FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
