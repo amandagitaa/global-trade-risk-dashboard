@@ -195,8 +195,5 @@ Kami memiliki visi untuk terus mempertajam dan memperluas kapabilitas intelijen 
 
 ## 👤 Author
 
-Sistem ini dikembangkan secara penuh oleh **Amanda Gita**.  
-Jika Anda memiliki pertanyaan seputar arsitektur teknis sistem atau menemukan celah yang perlu diperbaiki, silakan menghubungi *author* di repositori ini.
-
----
-*Dibuat secara teliti untuk kemulusan operasional logistik masa depan!* 🚢🌍
+Nama: Amanda Gita Syafitri
+Kelas: A3
