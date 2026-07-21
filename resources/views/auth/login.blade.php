@@ -89,7 +89,7 @@
                 @endif
 
                 {{-- Form --}}
-                <form method="POST" action="{{ route('login') }}" id="loginForm">
+                <form method="POST" action="https://global-trade-risk-dashboard-production.up.railway.app/login" id="loginForm">
                     @csrf
                     
                     {{-- Email --}}
