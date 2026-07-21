@@ -11,6 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+
+        $middleware->web(append: [
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        ]);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\IsAdminMiddleware::class,
         ]);
