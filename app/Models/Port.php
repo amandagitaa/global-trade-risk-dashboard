@@ -46,7 +46,11 @@ class Port extends Model
 
     public function country()
     {
-        return $this->belongsTo(Country::class);
+        return $this->belongsTo(
+            Country::class,
+            'country_iso2',
+            'country_iso2'
+        );
     }
 
     public function ships()

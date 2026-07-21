@@ -26,9 +26,13 @@ class Country extends Model
     // Relations
     // ======================
 
-    public function ports(): HasMany
+    public function ports()
     {
-        return $this->hasMany(Port::class);
+        return $this->hasMany(
+            Port::class,
+            'country_iso2',
+            'country_iso2'
+        );
     }
 
     public function riskScores(): HasMany
