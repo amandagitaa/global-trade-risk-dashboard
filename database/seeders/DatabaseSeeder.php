@@ -16,33 +16,23 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
 
-            PositiveWordSeeder::class,
+        PositiveWordSeeder::class,
+        NegativeWordSeeder::class,
 
-            NegativeWordSeeder::class,
+        WeatherSeeder::class,
+        CurrencySeeder::class,
+        EconomicDataSeeder::class,
 
-            WeatherSeeder::class,
+        RiskScoreSeeder::class,
 
-            CurrencySeeder::class,
+        TradeRecommendationSeeder::class,
+        NewsSeeder::class,
 
-            EconomicDataSeeder::class,
+        PortSeeder::class,
 
-            RiskScoreSeeder::class,
+        ShipSeeder::class,
+        ShippingRouteSeeder::class,
 
-            TradeRecommendationSeeder::class,
-
-            NewsSeeder::class,
-
-        ]);
-
-        $this->call([
-            PortSeeder::class,
-        ]);
-
-        $this->call([
-            CountrySeeder::class,
-            PortSeeder::class,
-            ShipSeeder::class,
-            ShippingRouteSeeder::class,
         ]);
     }
 }
