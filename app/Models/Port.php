@@ -49,7 +49,7 @@ class Port extends Model
         return $this->belongsTo(
             Country::class,
             'country_iso2',
-            'iso2'
+            'country_code'
         );
     }
 
