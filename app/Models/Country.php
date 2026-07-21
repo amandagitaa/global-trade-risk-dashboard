@@ -31,10 +31,9 @@ class Country extends Model
         return $this->hasMany(
             Port::class,
             'country_iso2',
-            'country_iso2'
+            'iso2'
         );
     }
-
     public function riskScores(): HasMany
     {
         return $this->hasMany(RiskScore::class);
