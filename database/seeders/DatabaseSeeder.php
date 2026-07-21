@@ -30,9 +30,9 @@ class DatabaseSeeder extends Seeder
 
         PortSeeder::class,
 
-        ShipSeeder::class,
         ShippingRouteSeeder::class,
-
+        ShipSeeder::class,
+        
         ]);
     }
 }

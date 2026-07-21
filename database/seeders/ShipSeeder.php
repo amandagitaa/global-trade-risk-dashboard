@@ -55,6 +55,11 @@ class ShipSeeder extends Seeder
 
             $route = \App\Models\ShippingRoute::inRandomOrder()->first();
 
+            if (!$route) {
+                $this->command->error('Shipping routes not found.');
+                return;
+            }
+
             Ship::updateOrCreate(
                 ['imo_number' => 'IMO'.str_pad($i,7,'0',STR_PAD_LEFT)],
                 [
