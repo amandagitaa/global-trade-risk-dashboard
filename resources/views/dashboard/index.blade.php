@@ -16,42 +16,58 @@
 </div>
 
 <div id="dashboard-summary-cards">
-    @include('dashboard.components.summary-cards')
+    @include('dashboard.components.summary-cards', [
+        'summary' => $summary
+    ])
 </div>
 
 <div class="row mb-4">
     <div class="col-lg-8" id="dashboard-world-map">
-        @include('dashboard.components.world-map')
+        @include('dashboard.components.world-map', [
+            'mapCountries' => $mapCountries
+        ])
     </div>
     <div class="col-lg-4 mt-4 mt-lg-0" id="dashboard-risk-chart">
-        @include('dashboard.components.risk-chart')
+        @include('dashboard.components.risk-chart', [
+            'riskDistribution' => $riskDistribution
+        ])
     </div>
 </div>
 
 <div class="row">
     <div class="col-12" id="dashboard-highest-risk">
-        @include('dashboard.components.highest-risk')
+        @include('dashboard.components.highest-risk', [
+            'highestRiskCountries' => $highestRiskCountries
+        ])
     </div>
 </div>
 
 <div class="row mt-4">
     <div class="col-12" id="dashboard-port-risk-panel">
-        @include('dashboard.components.port-risk-panel')
+        @include('dashboard.components.port-risk-panel', [
+            'portRisks' => $portRisks
+        ])
     </div>
 </div>
 
 <div class="row mt-4">
     <div class="col-lg-6" id="dashboard-weather-panel">
-        @include('dashboard.components.weather-panel')
+        @include('dashboard.components.weather-panel', [
+            'weatherPanel' => $weatherPanel
+        ])
     </div>
     <div class="col-lg-6 mt-4 mt-lg-0" id="dashboard-currency-panel">
-        @include('dashboard.components.currency-panel')
+        @include('dashboard.components.currency-panel', [
+            'currencyPanel' => $currencyPanel
+        ])
     </div>
 </div>
 
 <div class="row mt-4">
     <div class="col-12" id="dashboard-news-panel">
-        @include('dashboard.components.news-panel')
+        @include('dashboard.components.news-panel', [
+            'newsPanel' => $newsPanel
+        ])
     </div>
 </div>
 
