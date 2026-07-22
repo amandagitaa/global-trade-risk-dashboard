@@ -631,7 +631,7 @@ Score:
 <div class="d-flex gap-2">
 
 
-<a href="{{ route('news.show',$item->id) }}"
+<a href="{{ route('news.show', $item->slug) }}"
    class="btn btn-primary btn-sm">
 
 View Analysis
@@ -641,19 +641,12 @@ View Analysis
 
 
 @if($item->original_url)
-
-
 <a href="{{ $item->original_url }}"
    target="_blank"
-   class="btn btn-outline-dark btn-sm">
-
-
-Read Original Source ↗
-
-
+   rel="noopener noreferrer"
+   class="btn btn-outline-primary btn-sm">
+    Read Original Source
 </a>
-
-
 @endif
 
 

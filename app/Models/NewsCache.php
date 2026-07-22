@@ -32,16 +32,12 @@ class NewsCache extends Model
         'source',
 
         'category',
-
         'positive_score',
-
         'negative_score',
-
         'sentiment',
-
         'published_at',
-        
         'status',
+        'slug',
     ];
 
     protected $casts = [
@@ -49,6 +45,11 @@ class NewsCache extends Model
         'published_at' => 'datetime',
 
     ];
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 
     public function country()
     {
@@ -59,6 +60,13 @@ class NewsCache extends Model
     {
         static::addGlobalScope('published', function (Builder $builder) {
             $builder->where('status', 'Published');
+        });
+
+        static::saving(function ($news) {
+            // Slug is generated only from the real title, no more fallback dummy logic
+            if (empty($news->slug)) {
+                $news->slug = \Illuminate\Support\Str::slug($news->title) . '-' . \Illuminate\Support\Str::random(8);
+            }
         });
     }
 }

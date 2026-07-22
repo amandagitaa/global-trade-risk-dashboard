@@ -26,7 +26,6 @@ class DatabaseSeeder extends Seeder
         RiskScoreSeeder::class,
 
         TradeRecommendationSeeder::class,
-        NewsSeeder::class,
 
         PortSeeder::class,
 

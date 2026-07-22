@@ -2,6 +2,11 @@
 
 return [
 
+    'news_api' => [
+        'provider' => env('NEWS_API_PROVIDER', 'gnews'),
+        'key' => env('NEWS_API_KEY', ''),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

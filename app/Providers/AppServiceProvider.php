@@ -13,7 +13,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Contracts\NewsProviderInterface::class,
+            \App\Services\News\NewsApiService::class
+        );
+        $this->app->bind(
+            \App\Contracts\NewsRepositoryInterface::class,
+            \App\Repositories\NewsRepository::class
+        );
     }
 
     /**
