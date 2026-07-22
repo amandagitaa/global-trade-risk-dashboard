@@ -125,12 +125,20 @@ class DashboardService
     private function getPortRisks($countryId)
     {
         $query = Port::query();
-        
+
         if ($countryId) {
-            $query->where('country_id', $countryId);
+
+            $country = Country::find($countryId);
+
+            if ($country) {
+                $query->where('country_iso2', $country->country_code);
+            }
         }
-        
-        return $query->orderByDesc('risk_score')->take(10)->get();
+
+        return $query
+            ->orderByDesc('risk_score')
+            ->take(10)
+            ->get();
     }
 
     /**
