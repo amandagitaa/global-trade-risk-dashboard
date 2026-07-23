@@ -631,7 +631,8 @@ Score:
 <div class="d-flex gap-2">
 
 
-<a href="{{ route('news.show', $item->slug) }}"
+<pre>{{ print_r($item->toArray(), true) }}</pre>
+@php(exit)
    class="btn btn-primary btn-sm">
 
 View Analysis
