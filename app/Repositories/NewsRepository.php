@@ -78,8 +78,33 @@ class NewsRepository implements NewsRepositoryInterface
     public function insert(array $data): bool
     {
         try {
-            return NewsCache::insert($data);
+            NewsCache::unguard();
+            foreach ($data as $item) {
+                $originalUrl = $item['original_url'] ?? null;
+
+                // Validate original_url: if empty or starts with /news/, consider it invalid
+                if (empty($originalUrl) || str_starts_with($originalUrl, '/news/')) {
+                    $originalUrl = null;
+                    $item['original_url'] = null;
+                }
+
+                if ($originalUrl !== null) {
+                    // Update or create using ONLY original_url as identity key.
+                    // Using withoutGlobalScopes to ensure we find it even if it's not 'Published'.
+                    NewsCache::withoutGlobalScopes()->updateOrCreate(
+                        ['original_url' => $originalUrl],
+                        $item
+                    );
+                } else {
+                    // Legacy data or invalid url. Insert as new record. Do NOT merge by title.
+                    NewsCache::create($item);
+                }
+            }
+            NewsCache::reguard();
+            
+            return true;
         } catch (\Exception $e) {
+            NewsCache::reguard();
             Log::error("NewsRepository: Failed batch insert - " . $e->getMessage());
             throw $e;
         }
