@@ -12,4 +12,17 @@ return [
     'batch_size' => (int) env('NEWS_BATCH_SIZE', 50),
     'cache_ttl' => (int) env('NEWS_CACHE_TTL', 3600), // seconds
     'sync_frequency' => env('NEWS_SYNC_FREQUENCY', '0 */6 * * *'),
+    
+    // Dynamic categories configuration for NewsSync
+    'category_limit' => 10,
+    'categories' => [
+        'Business',
+        'Trade',
+        'Technology',
+        'Shipping',
+        'Logistics',
+        'Manufacturing',
+        'Energy',
+        'Geopolitics',
+    ],
 ];

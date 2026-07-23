@@ -25,21 +25,21 @@ class NewsApiService implements NewsProviderInterface
 
     public function fetchLatest(): Collection
     {
-        $categories = [
+        $categories = config('news.categories', [
             'business',
-            'energy',
-            'geopolitics',
+            'trade',
+            'technology',
+            'shipping',
             'logistics',
             'manufacturing',
-            'shipping',
-            'technology',
-            'trade'
-        ];
+            'energy',
+            'geopolitics'
+        ]);
 
         $allArticles = collect();
 
         foreach ($categories as $category) {
-            $articles = $this->executeFetch($category);
+            $articles = $this->executeFetch(strtolower($category));
             $allArticles = $allArticles->merge($articles);
         }
 
@@ -184,7 +184,8 @@ class NewsApiService implements NewsProviderInterface
             );
         }
 
-        return collect($articles);
+        $limit = config('news.category_limit', 10);
+        return collect($articles)->take($limit);
     }
 
     protected function gNewsStrategy(string $category, ?string $countryCode): Collection
@@ -199,11 +200,13 @@ class NewsApiService implements NewsProviderInterface
         $queryCategory = in_array($category, $allowedCategories) ? $category : 'business';
 
         $url = "https://gnews.io/api/v4/top-headlines";
+        
+        $limit = config('news.category_limit', 10);
         $params = [
             'apikey' => $apiKey,
             'category' => $queryCategory,
             'lang' => $this->config['language'],
-            'max' => min($this->config['max_results'], 100),
+            'max' => min($limit, 100),
         ];
 
         if ($countryCode) {
@@ -289,7 +292,8 @@ class NewsApiService implements NewsProviderInterface
                                 );
                             }
 
-                            if (count($articles) >= $this->config['max_results']) {
+                            $limit = config('news.category_limit', 10);
+                            if (count($articles) >= $limit) {
                                 break 2;
                             }
                         }
