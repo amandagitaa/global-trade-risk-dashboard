@@ -126,15 +126,22 @@ class NewsSyncService
                     'source' => $article['source'],
                     'author' => $article['author'],
                     'published_at' => $article['published_at'],
-                    'language' => $article['language'] ?? 'en',
                     'country_id' => $countryData['country_id'],
-                    'country_name' => $countryData['country_name'], // Helper column
+                    'country_name' => $countryData['country_name'],
                     'category' => $categoryData['category'],
                     'sentiment' => $sentimentData['sentiment'],
-                    'sentiment_score' => $sentimentData['sentiment_score'] ?? null,
-                    'risk_level' => $riskData['risk_level'],
-                    'risk_score' => $riskData['risk_score'],
-                    'is_dummy' => 0, // Ensure real news is marked appropriately
+                    
+                    /* 
+                     * LEGACY/UNSYNCED FIELDS REMOVED TO PREVENT SQLSTATE[42S22] Unknown column error:
+                     * - 'language': Not present in news_cache schema.
+                     * - 'sentiment_score': Not mapped. DB schema uses positive_score & negative_score 
+                     *   which represent two independent scores, whereas sentiment_score is a single metric. 
+                     *   Mapping them is a business logic violation.
+                     * - 'risk_level': Not present in news_cache schema.
+                     * - 'risk_score': Not present in news_cache schema.
+                     * - 'is_dummy': Not present in news_cache schema. (Not to be confused with status/verification).
+                     */
+                     
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
