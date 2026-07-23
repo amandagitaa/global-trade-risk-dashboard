@@ -18,7 +18,8 @@ class NewsSyncService
         protected DuplicateDetector $duplicateDetector,
         protected SentimentService $sentimentService,
         protected TradeRiskService $tradeRiskService,
-        protected CacheService $cacheService
+        protected CacheService $cacheService,
+        protected SupplyChainRelevanceFilter $relevanceFilter
     ) {}
 
     public function sync(): void
@@ -96,6 +97,14 @@ class NewsSyncService
                 ]);
 
                 // 1. Validation & Duplicate Check
+                if (!$this->relevanceFilter->isRelevant($article)) {
+                    Log::info('NEWS DISCARDED: Irrelevant to Supply Chain', [
+                        'title' => $article['title'] ?? null,
+                        'url' => $article['original_url'] ?? null
+                    ]);
+                    continue;
+                }
+
                 $duplicateStatus = $this->duplicateDetector->isDuplicate($article);
                 if ($duplicateStatus['is_duplicate'] ?? false) {
                     continue;
