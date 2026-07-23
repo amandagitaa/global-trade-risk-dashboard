@@ -82,19 +82,45 @@ class NewsRepository implements NewsRepositoryInterface
             foreach ($data as $item) {
                 $originalUrl = $item['original_url'] ?? null;
 
+                Log::info('NEWS TRACE 4', [
+                    'title' => $item['title'] ?? null,
+                    'incoming_original_url' => $item['original_url'] ?? null,
+                ]);
+
                 // Validate original_url: if empty or starts with /news/, consider it invalid
                 if (empty($originalUrl) || str_starts_with($originalUrl, '/news/')) {
                     $originalUrl = null;
                     $item['original_url'] = null;
                 }
 
+                Log::info('NEWS TRACE 5', [
+                    'title' => $item['title'] ?? null,
+                    'validated_original_url' => $item['original_url'] ?? null,
+                ]);
+
                 if ($originalUrl !== null) {
+                    Log::info('NEWS TRACE 6', [
+                        'title' => $item['title'] ?? null,
+                        'lookup_key' => $originalUrl,
+                        'payload_original_url' => $item['original_url'] ?? null,
+                    ]);
+
                     // Update or create using ONLY original_url as identity key.
                     // Using withoutGlobalScopes to ensure we find it even if it's not 'Published'.
                     NewsCache::withoutGlobalScopes()->updateOrCreate(
                         ['original_url' => $originalUrl],
                         $item
                     );
+
+                    $result = NewsCache::withoutGlobalScopes()
+                        ->where('original_url', $originalUrl)
+                        ->first();
+
+                    Log::info('NEWS TRACE 7', [
+                        'database_id' => $result?->id,
+                        'database_original_url' => $result?->original_url,
+                        'database_title' => $result?->title,
+                    ]);
                 } else {
                     // Legacy data or invalid url. Insert as new record. Do NOT merge by title.
                     NewsCache::create($item);

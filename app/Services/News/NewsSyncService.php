@@ -90,6 +90,11 @@ class NewsSyncService
 
         foreach ($articles as $article) {
             try {
+                Log::info('NEWS TRACE 2', [
+                    'title' => $article['title'] ?? null,
+                    'article_original_url' => $article['original_url'] ?? null,
+                ]);
+
                 // 1. Validation & Duplicate Check
                 $duplicateStatus = $this->duplicateDetector->isDuplicate($article);
                 if ($duplicateStatus['is_duplicate'] ?? false) {
@@ -134,6 +139,11 @@ class NewsSyncService
                     'updated_at' => now(),
                 ];
 
+                Log::info('NEWS TRACE 3', [
+                    'title' => $processedData['title'] ?? null,
+                    'processed_original_url' => $processedData['original_url'] ?? null,
+                ]);
+
                 $batch[] = $processedData;
 
                 if (count($batch) >= $batchSize) {
@@ -146,6 +156,12 @@ class NewsSyncService
                 }
 
             } catch (\Exception $e) {
+                Log::info('NEWS TRACE 8', [
+                    'title' => $article['title'] ?? null,
+                    'original_url' => $article['original_url'] ?? null,
+                    'payload' => $article,
+                    'stacktrace' => $e->getTraceAsString(),
+                ]);
                 $failCount++;
                 Log::error("NewsSyncService: Failed to process article '{$article['title']}' - " . $e->getMessage());
                 // Continue to the next article without breaking the loop

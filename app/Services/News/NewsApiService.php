@@ -302,7 +302,7 @@ class NewsApiService implements NewsProviderInterface
         string $category,
         string $provider
     ): array {
-        return [
+        $formatted = [
             'title' => trim($title),
             'description' => trim($description),
             'content' => trim($content),
@@ -316,5 +316,14 @@ class NewsApiService implements NewsProviderInterface
             'category' => strtolower($category),
             'provider' => strtolower($provider),
         ];
+
+        Log::info('NEWS TRACE 1', [
+            'provider' => $provider,
+            'title' => $formatted['title'],
+            'url' => $url,
+            'original_url' => $formatted['original_url'],
+        ]);
+
+        return $formatted;
     }
 }
