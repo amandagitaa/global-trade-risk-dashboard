@@ -102,8 +102,9 @@ class NewsSyncService
                 }
 
                 if ($duplicateStatus['is_duplicate']) {
-    Log::info('NEWS DUPLICATE', [
+    Log::info('X NEWS DUPLICATE', [
         'title' => $article['title'],
+        'original_url' => $article['original_url'] ?? null,
         'reason' => $duplicateStatus['duplicate_reason'],
         'matched_field' => $duplicateStatus['matched_field'],
     ]);
