@@ -25,7 +25,25 @@ class NewsApiService implements NewsProviderInterface
 
     public function fetchLatest(): Collection
     {
-        return $this->executeFetch('business');
+        $categories = [
+            'business',
+            'energy',
+            'geopolitics',
+            'logistics',
+            'manufacturing',
+            'shipping',
+            'technology',
+            'trade'
+        ];
+
+        $allArticles = collect();
+
+        foreach ($categories as $category) {
+            $articles = $this->executeFetch($category);
+            $allArticles = $allArticles->merge($articles);
+        }
+
+        return $allArticles;
     }
 
     public function fetchBusiness(): Collection
