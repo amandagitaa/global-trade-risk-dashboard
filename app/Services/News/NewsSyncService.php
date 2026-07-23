@@ -130,6 +130,9 @@ class NewsSyncService
                     'title' => $article['title'],
                     'description' => $article['description'],
                     'content' => $article['content'],
+                    // Added to satisfy non-nullable DB constraint. Both url and original_url 
+                    // represent identical business meaning (External source URL).
+                    'url' => $article['original_url'],
                     'original_url' => $article['original_url'],
                     'image_url' => $imageUrl,
                     'source' => $article['source'],
