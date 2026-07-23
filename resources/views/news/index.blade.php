@@ -631,12 +631,9 @@ Score:
 <div class="d-flex gap-2">
 
 
-<pre>{{ print_r($item->toArray(), true) }}</pre>
-@php(exit)
+<a href="{{ route('news.show', $item) }}"
    class="btn btn-primary btn-sm">
-
-View Analysis
-
+    View Analysis
 </a>
 
 
