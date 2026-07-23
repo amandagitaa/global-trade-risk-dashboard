@@ -130,6 +130,8 @@ class NewsSyncService
                     'country_name' => $countryData['country_name'],
                     'category' => $categoryData['category'],
                     'sentiment' => $sentimentData['sentiment'],
+                    'risk_level' => $riskData['risk_level'],
+                    'risk_score' => $riskData['risk_score'],
                     
                     /* 
                      * LEGACY/UNSYNCED FIELDS REMOVED TO PREVENT SQLSTATE[42S22] Unknown column error:
@@ -137,9 +139,10 @@ class NewsSyncService
                      * - 'sentiment_score': Not mapped. DB schema uses positive_score & negative_score 
                      *   which represent two independent scores, whereas sentiment_score is a single metric. 
                      *   Mapping them is a business logic violation.
-                     * - 'risk_level': Not present in news_cache schema.
-                     * - 'risk_score': Not present in news_cache schema.
                      * - 'is_dummy': Not present in news_cache schema. (Not to be confused with status/verification).
+                     * 
+                     * RETAINED:
+                     * - 'risk_level' and 'risk_score' because both columns exist in news_cache schema.
                      */
                      
                     'created_at' => now(),
