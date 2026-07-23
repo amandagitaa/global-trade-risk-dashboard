@@ -101,6 +101,14 @@ class NewsSyncService
                     continue;
                 }
 
+                if ($duplicateStatus['is_duplicate']) {
+    Log::info('NEWS DUPLICATE', [
+        'title' => $article['title'],
+        'reason' => $duplicateStatus['duplicate_reason'],
+        'matched_field' => $duplicateStatus['matched_field'],
+    ]);
+}
+
                 // 2. Resolvers
                 $countryData = $this->countryResolver->resolve($article);
                 $categoryData = $this->categoryResolver->resolve($article);
