@@ -29,10 +29,10 @@ class PortController extends Controller
         ]);
 
         $nearbyPorts = Port::with('country')
-            ->where('country_id',$port->country_id)
-            ->where('id','!=',$port->id)
-            ->take(5)
-            ->get();
+    ->where('country_iso2', $port->country_iso2)
+    ->where('id', '!=', $port->id)
+    ->take(5)
+    ->get();
 
         return view(
             'ports.show',
