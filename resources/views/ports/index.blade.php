@@ -362,14 +362,9 @@
 
                         <td class="text-center">
 
-                            <a
-                                href="{{ route('ports.show',$port->id) }}"
-                                class="btn btn-primary btn-sm mb-1">
-
-                                <i class="bi bi-eye"></i>
-
-                                View
-
+                            <a href="{{ route('ports.show', $port) }}"
+                            class="btn btn-primary">
+                                <i class="bi bi-eye"></i> View
                             </a>
 
                         </td>

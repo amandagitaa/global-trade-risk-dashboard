@@ -117,11 +117,13 @@ class CountryDetailService
             $shippingRoutes = \App\Models\ShippingRoute::whereIn('origin_port_id', $portIds)
                                 ->orWhereIn('destination_port_id', $portIds)->count();
                                 
-            $destPortIds = \App\Models\ShippingRoute::whereIn('origin_port_id', $portIds)->pluck('destination_port_id');
+            $destPortIds = \App\Models\ShippingRoute::whereIn('origin_port_id', $portIds)
+                ->pluck('destination_port_id');
+
             $connectedCountries = \App\Models\Port::whereIn('id', $destPortIds)
-                                ->where('country_id', '!=', $country->id)
-                                ->distinct()
-                                ->count('country_id');
+                ->where('country_iso2', '!=', $country->country_code)
+                ->distinct()
+                ->count('country_iso2');
 
             $exportCounts = \App\Models\ShippingRoute::whereIn('origin_port_id', $portIds)
                 ->selectRaw('origin_port_id, count(*) as total')
