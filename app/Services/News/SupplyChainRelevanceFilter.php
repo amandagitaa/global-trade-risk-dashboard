@@ -5,146 +5,118 @@ namespace App\Services\News;
 class SupplyChainRelevanceFilter
 {
     /**
-     * Minimum score required for an article to be considered relevant to Supply Chain.
+     * Threshold required for the final score.
      */
     protected const THRESHOLD = 2;
 
     /**
-     * Positive keywords that strongly indicate relevance to global trade, 
-     * shipping, logistics, manufacturing, and supply chain.
+     * Supply Chain domains and their contextual keywords.
+     * We group them to ensure the article has a broad context or a very strong specific context.
      */
-    protected array $keywords = [
-        // Supply Chain & Trade (High Relevance)
-        'supply chain' => 2,
-        'logistics' => 2,
-        'freight' => 2,
-        'cargo' => 2,
-        'customs' => 2,
-        'tariff' => 2,
-        'trade war' => 2,
-        'trade agreement' => 2,
-        'free trade' => 2,
-        'fta ' => 2,
-        'export restriction' => 2,
-        'import regulation' => 2,
-        'export ban' => 2,
-        'trade embargo' => 2,
-        'trade sanction' => 2,
-        'unctad' => 2,
-        'wto ' => 2,
-
-        // Shipping & Maritime
-        'shipping line' => 2,
-        'port congestion' => 2,
-        'suez canal' => 2,
-        'panama canal' => 2,
-        'red sea crisis' => 2,
-        'red sea shipping' => 2,
-        'maersk' => 2,
-        'msc ' => 2,
-        'cma cgm' => 2,
-        'hapag-lloyd' => 2,
-        'cosco' => 2,
-        'evergreen' => 2,
-        'vessel' => 1,
-        'container' => 1,
-        'port of ' => 2,
-        'harbor' => 1,
-        
-        // Logistics & Operations
-        'warehouse automation' => 2,
-        'distribution center' => 2,
-        'cold chain' => 2,
-        'last mile' => 2,
-        'freight forwarding' => 2,
-        'supply shortage' => 2,
-        'inventory' => 1,
-        'dhl ' => 2,
-        'fedex' => 2,
-        'ups ' => 1,
-
-        // Manufacturing & Industry
-        'semiconductor manufacturing' => 2,
-        'chip shortage' => 2,
-        'semiconductor restriction' => 2,
-        'automotive production' => 2,
-        'electronics manufacturing' => 2,
-        'industrial production' => 1,
-        'industrial output' => 1,
-        'production capacity' => 1,
-        'moves production' => 2,
-        'factory halted' => 2,
-        'factory' => 1,
-        'manufacturing' => 1,
-
-        // Technology in Supply Chain
-        'supply chain ai' => 2,
-        'erp ' => 2,
-        'sap ' => 2,
-        'oracle scm' => 2,
-        'rfid' => 2,
-        'iot logistics' => 2,
-        'digital twin' => 2,
-        'predictive logistics' => 2,
-        'fleet management' => 2,
-
-        // Geopolitics & Energy (Contextual to Trade)
-        'china-us trade' => 2,
-        'russia sanctions' => 2,
-        'taiwan semiconductor' => 2,
-        'south china sea' => 2,
-        'rare earth' => 2,
-        'energy crisis' => 1,
-        'lng' => 1,
-        'oil price' => 1,
-        'shipping cost' => 2,
-        'power grid' => 1,
-        
-        // General Trade basics
-        'import' => 1,
-        'export' => 1,
+    protected array $contextGroups = [
+        'Trade' => [
+            'import', 'export', 'tariff', 'customs', 'wto', 'fta', 'sanctions', 'embargo', 
+            'trade agreement', 'trade war', 'free trade', 'export restriction', 'import regulation'
+        ],
+        'Shipping' => [
+            'port ', 'vessel', 'freight', 'cargo', 'container', 'maersk', 'msc ', 'cosco', 
+            'suez canal', 'panama canal', 'shipping line', 'harbor'
+        ],
+        'Logistics' => [
+            'warehouse', 'inventory', 'distribution', 'dhl', 'fedex', 'ups ', 'cold chain', 
+            'last mile', 'supply shortage'
+        ],
+        'Manufacturing' => [
+            'factory', 'production', 'semiconductor', 'chip shortage', 'electronics manufacturing', 
+            'industrial output', 'manufacturing capacity', 'industrial production'
+        ],
+        'Energy' => [
+            'oil price', 'lng', 'gas supply', 'electricity grid', 'renewable energy', 'coal', 
+            'shipping cost', 'energy crisis'
+        ],
+        'Technology' => [
+            'supply chain ai', 'erp', 'sap ', 'oracle scm', 'rfid', 'iot logistics', 
+            'digital twin', 'predictive logistics', 'fleet management', 'warehouse automation'
+        ],
+        'Geopolitics' => [
+            'china-us trade', 'taiwan semiconductor', 'red sea', 'south china sea', 
+            'russia sanctions', 'export ban', 'rare earth', 'trade embargo'
+        ],
     ];
 
     /**
-     * Negative keywords to penalize articles that are likely out of scope 
-     * (e.g., entertainment, pure finance without supply chain context).
+     * Negative keywords to penalize financial, entertainment, and general news.
      */
     protected array $negativeKeywords = [
-        'quarterly earnings' => -2,
-        'dividend' => -2,
-        'subscribers' => -2,
-        'celebrity' => -3,
-        'football' => -3,
-        'entertainment' => -3,
-        'movie' => -3,
-        'actor ' => -3,
-        'hollywood' => -3,
+        // Finance & Corporate
+        'earnings', 'quarterly', 'profit', 'net income', 'eps', 'dividend', 'shareholders', 
+        'stock market', 'nasdaq', 'nyse', 'analyst rating', 'price target', 'buy rating', 
+        'sell rating', 'ipo', 'wall street',
+        
+        // Entertainment & General
+        'celebrity', 'movie', 'football', 'entertainment', 'music', 'actor', 'actress', 
+        'hollywood', 'netflix subscribers', 'gossip'
     ];
 
+    /**
+     * Determine if an article is relevant to the Global Supply Chain context.
+     */
     public function isRelevant(array $article): bool
     {
         $title = strtolower($article['title'] ?? '');
         $description = strtolower($article['description'] ?? '');
         $content = strtolower($article['content'] ?? '');
 
-        // Title gets double weight in frequency implicitly by concatenating twice,
-        // because a keyword in the title is a very strong signal.
+        // Title has strong context, we duplicate it to give it more weight in scoring
         $textToAnalyze = $title . ' ' . $title . ' ' . $description . ' ' . $content;
         
-        $score = 0;
+        $activeGroups = [];
+        $positiveScore = 0;
 
-        foreach ($this->keywords as $keyword => $points) {
-            if (str_contains($textToAnalyze, $keyword)) {
-                $score += $points;
+        // TAHAP 1 & 2: Deteksi kelompok konteks dan hitung skor positif
+        foreach ($this->contextGroups as $groupName => $keywords) {
+            $groupScore = 0;
+            foreach ($keywords as $keyword) {
+                // Count how many times the keyword appears
+                $occurrences = substr_count($textToAnalyze, strtolower($keyword));
+                if ($occurrences > 0) {
+                    $groupScore += 1;
+                }
+            }
+
+            if ($groupScore > 0) {
+                $activeGroups[] = $groupName;
+                $positiveScore += $groupScore;
             }
         }
 
-        foreach ($this->negativeKeywords as $keyword => $points) {
-            if (str_contains($textToAnalyze, $keyword)) {
-                $score += $points;
+        // TAHAP 3: Hitung skor negatif (Negative Context)
+        $negativeScore = 0;
+        foreach ($this->negativeKeywords as $keyword) {
+            $occurrences = substr_count($textToAnalyze, strtolower($keyword));
+            if ($occurrences > 0) {
+                $negativeScore += 1;
             }
         }
 
-        return $score >= self::THRESHOLD;
+        // TAHAP 4: Evaluasi Akhir
+        
+        // Artikel terlalu didominasi konteks negatif (misal murni berita saham/hiburan)
+        // Kita gunakan penalti besar, jika negatif menutupi positif, langsung tolak.
+        if ($negativeScore > 0 && ($positiveScore - ($negativeScore * 2) < 0)) {
+            return false;
+        }
+
+        // Memenuhi syarat minimal 2 kelompok konteks, ATAU 1 kelompok tapi memiliki >= 2 keyword berbeda 
+        // (Contoh: "Port" + "Container" = 1 grup Shipping tapi 2 keyword berbeda -> LOLOS)
+        $hasMultiContext = count($activeGroups) >= 2;
+        $hasStrongSingleContext = (count($activeGroups) === 1 && $positiveScore >= 2);
+
+        if (!($hasMultiContext || $hasStrongSingleContext)) {
+            return false;
+        }
+
+        // Memastikan total skor positif minimal mencapai threshold
+        return $positiveScore >= self::THRESHOLD;
     }
 }

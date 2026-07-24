@@ -11,10 +11,8 @@ class CategoryResolver
      * Standard allowed categories
      */
     protected const ALLOWED_CATEGORIES = [
-        'Business', 'Economy', 'Trade', 'Politics', 'Finance', 
-        'Technology', 'Energy', 'Transportation', 'Agriculture', 
-        'Manufacturing', 'Supply Chain', 'Logistics', 'Natural Disaster', 
-        'Weather', 'Healthcare', 'Environment', 'General'
+        'Business', 'Trade', 'Shipping', 'Logistics', 
+        'Manufacturing', 'Energy', 'Technology', 'Geopolitics'
     ];
 
     /**
@@ -69,9 +67,9 @@ class CategoryResolver
             }
         }
 
-        // 5. Priority 5: Fallback General
-        $this->logResolution('General', 'Fallback', 'LOW', 'None');
-        return $this->formatResult('General', 'LOW', 'Fallback');
+        // 5. Priority 5: Fallback Business
+        $this->logResolution('Business', 'Fallback', 'LOW', 'None');
+        return $this->formatResult('Business', 'LOW', 'Fallback');
     }
 
     /**
@@ -110,15 +108,19 @@ class CategoryResolver
         // Partial match mappings
         $mapping = [
             'tech' => 'Technology',
-            'health' => 'Healthcare',
+            'health' => 'Business', 
             'science' => 'Technology',
-            'sports' => 'General', // Not relevant, fallback to general
-            'entertainment' => 'General',
-            'world' => 'Politics', // Often world news maps to politics/geopolitics
-            'nation' => 'Politics',
+            'sports' => 'Business', 
+            'entertainment' => 'Business',
+            'world' => 'Geopolitics',
+            'nation' => 'Geopolitics',
+            'economy' => 'Trade',
+            'finance' => 'Business',
+            'transportation' => 'Shipping',
+            'supply chain' => 'Logistics'
         ];
 
-        return $mapping[$raw] ?? null;
+        return $mapping[$raw] ?? 'Business';
     }
 
     /**
@@ -148,52 +150,28 @@ class CategoryResolver
     {
         return [
             'Business' => [
-                'company', 'corporation', 'enterprise', 'startup', 'investment', 'merger', 'acquisition'
-            ],
-            'Economy' => [
-                'gdp', 'inflation', 'economic growth', 'economy', 'recession', 'monetary', 'fiscal'
+                'company', 'corporation', 'enterprise', 'startup', 'investment', 'merger', 'acquisition', 'finance', 'economy', 'market'
             ],
             'Trade' => [
-                'export', 'import', 'tariff', 'custom', 'trade agreement', 'supply', 'wto', 'freetrade'
+                'export', 'import', 'tariff', 'custom', 'trade agreement', 'wto', 'freetrade', 'sanctions', 'embargo'
             ],
-            'Finance' => [
-                'bank', 'interest rate', 'stock', 'bond', 'exchange rate', 'currency', 'forex'
-            ],
-            'Technology' => [
-                'AI', 'robot', 'automation', 'software', 'semiconductor', 'chip', 'cybersecurity'
-            ],
-            'Energy' => [
-                'oil', 'gas', 'coal', 'renewable', 'electricity', 'solar', 'wind'
-            ],
-            'Transportation' => [
-                'shipping', 'port', 'cargo', 'airline', 'container', 'vessel', 'freight'
-            ],
-            'Supply Chain' => [
-                'supplier', 'distribution', 'warehouse', 'inventory', 'lead time', 'procurement'
+            'Shipping' => [
+                'shipping', 'port', 'cargo', 'container', 'vessel', 'freight', 'maersk', 'canal', 'maritime'
             ],
             'Logistics' => [
-                'delivery', 'fleet', 'shipping route', 'freight', 'trucking', 'last mile'
-            ],
-            'Natural Disaster' => [
-                'earthquake', 'flood', 'eruption', 'tsunami', 'storm', 'hurricane', 'typhoon'
-            ],
-            'Weather' => [
-                'rainfall', 'temperature', 'climate', 'cyclone', 'drought'
-            ],
-            'Healthcare' => [
-                'virus', 'pandemic', 'hospital', 'medical', 'vaccine', 'disease'
-            ],
-            'Environment' => [
-                'pollution', 'forest', 'emission', 'carbon', 'sustainability', 'green'
-            ],
-            'Politics' => [
-                'election', 'government', 'parliament', 'senate', 'legislation', 'diplomacy'
-            ],
-            'Agriculture' => [
-                'farming', 'crop', 'harvest', 'wheat', 'corn', 'soybean', 'fertilizer'
+                'supplier', 'distribution', 'warehouse', 'inventory', 'delivery', 'fleet', 'last mile', 'cold chain'
             ],
             'Manufacturing' => [
-                'factory', 'production line', 'assembly', 'industrial', 'plant'
+                'factory', 'production', 'assembly', 'industrial', 'plant', 'semiconductor', 'chip'
+            ],
+            'Energy' => [
+                'oil', 'gas', 'coal', 'renewable', 'electricity', 'solar', 'wind', 'lng'
+            ],
+            'Technology' => [
+                'AI', 'robot', 'automation', 'software', 'rfid', 'iot', 'digital twin', 'erp'
+            ],
+            'Geopolitics' => [
+                'election', 'government', 'diplomacy', 'geopolitics', 'war', 'conflict', 'red sea', 'taiwan'
             ]
         ];
     }

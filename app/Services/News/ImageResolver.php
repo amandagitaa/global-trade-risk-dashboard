@@ -24,11 +24,10 @@ class ImageResolver
             return $article['image_url'];
         }
 
-        // If no API image and no valid original URL to scrape from, fallback directly
+        // If no API image and no valid original URL to scrape from, return empty string
         if (empty($originalUrl) || !filter_var($originalUrl, FILTER_VALIDATE_URL)) {
-            $fallback = $this->getFallbackImage($article['category'] ?? 'general');
-            $this->logResolution($fallback, 'Fallback (No valid URL)');
-            return $fallback;
+            $this->logResolution('none', 'No valid URL to scrape');
+            return '';
         }
 
         // Try scraping meta tags from the original article URL
@@ -52,11 +51,10 @@ class ImageResolver
             return $scrapedImage['thumbnail'];
         }
 
-        // 5. Priority 5: Default Fallback Image
-        $fallback = $this->getFallbackImage($article['category'] ?? 'general');
-        $this->logResolution($fallback, 'Default Fallback');
+        // 5. Priority 5: No image found
+        $this->logResolution('none', 'No Image Found');
         
-        return $fallback;
+        return '';
     }
 
     /**
@@ -140,20 +138,11 @@ class ImageResolver
 
     /**
      * Provides a default fallback image based on the category.
+     * (Deprecated: System no longer uses fallback dummy images)
      */
     protected function getFallbackImage(string $category): string
     {
-        $category = strtolower($category);
-        $fallbacks = [
-            'trade' => '/images/news/trade.jpg',
-            'shipping' => '/images/news/shipping.jpg',
-            'logistics' => '/images/news/logistics.jpg',
-            'economy' => '/images/news/economy.jpg',
-            'finance' => '/images/news/finance.jpg',
-            'business' => '/images/news/business.jpg',
-        ];
-
-        return $fallbacks[$category] ?? '/images/news/default.jpg';
+        return '';
     }
 
     /**

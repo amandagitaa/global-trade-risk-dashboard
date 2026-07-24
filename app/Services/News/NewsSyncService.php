@@ -124,6 +124,15 @@ class NewsSyncService
                 $categoryData = $this->categoryResolver->resolve($article);
                 $imageUrl = $this->imageResolver->resolve($article);
 
+                if (empty($imageUrl)) {
+                    Log::info("SKIP ARTICLE\nReason: Invalid image", [
+                        'Title' => $article['title'] ?? 'Unknown',
+                        'Source' => $article['source'] ?? 'Unknown',
+                        'Original URL' => $article['original_url'] ?? $article['url'] ?? 'Unknown'
+                    ]);
+                    continue;
+                }
+
                 // Inject resolved category into article for Sentiment & Risk
                 $article['category'] = $categoryData['category'];
 
