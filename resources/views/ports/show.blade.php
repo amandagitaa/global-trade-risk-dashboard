@@ -62,9 +62,13 @@
                     <a href="{{ route('ports.index') }}" class="btn btn-light enterprise-btn">
                         <i class="bi bi-arrow-left me-2"></i> Back to Ports
                     </a>
-                    <a href="{{ route('countries.show', $port->country_id) }}" class="btn btn-primary enterprise-btn">
-                        Open Country <i class="bi bi-box-arrow-up-right ms-2"></i>
-                    </a>
+                    @if($port->country)
+    <a href="{{ route('countries.show', $port->country) }}"
+       class="btn btn-primary enterprise-btn">
+        Open Country
+        <i class="bi bi-box-arrow-up-right ms-2"></i>
+    </a>
+@endif
                 </div>
             </div>
         </div>
