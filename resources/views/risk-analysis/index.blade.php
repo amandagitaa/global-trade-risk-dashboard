@@ -242,7 +242,7 @@
                             @if($risk->country)
 
                                 <a
-                                    href="{{ route('countries.show',$risk->country->id) }}"
+                                    href="{{ route('risk-analysis.show',$risk->country->id) }}"
                                     class="btn btn-sm btn-outline-warning">
 
                                     Detail

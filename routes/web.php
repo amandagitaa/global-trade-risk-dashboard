@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/trade-planner', [TradePlannerController::class, 'index'])->name('trade-planner.index');
     
     Route::get('/risk-analysis', [RiskAnalysisController::class, 'index'])->name('risk-analysis.index');
+    Route::get('/risk-analysis/{country}', [RiskAnalysisController::class, 'show'])->name('risk-analysis.show');
 
     Route::resource('watch-list', WatchListController::class)->except(['create', 'edit', 'update']);
 
