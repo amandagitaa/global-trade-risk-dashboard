@@ -362,19 +362,6 @@
 
                         <td class="text-center">
 
-                            <button
-                                class="btn btn-success btn-sm mb-1"
-                                onclick="focusPort(
-                                    {{ $port->latitude }},
-                                    {{ $port->longitude }}
-                                )">
-
-                                <i class="bi bi-geo-alt"></i>
-
-                                Locate
-
-                            </button>
-
                             <a
                                 href="{{ route('ports.show',$port->id) }}"
                                 class="btn btn-primary btn-sm mb-1">
