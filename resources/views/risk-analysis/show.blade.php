@@ -318,7 +318,7 @@
                         <div class="card-body">
                             <h6 class="fw-bold"><i class="bi bi-ship"></i> Port Condition</h6>
                             @if($country->ports->first())
-                                <p class="mb-2">Max Congestion: {{ $country->ports->first()->congestion }}%</p>
+                                <p class="mb-2">Logistics Risk: {{ $country->ports->first()->logistic_risk }} / 100</p>
                             @else
                                 <p class="text-muted mb-2">Data unavailable</p>
                             @endif

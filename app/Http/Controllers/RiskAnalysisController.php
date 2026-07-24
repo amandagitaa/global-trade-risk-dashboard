@@ -71,7 +71,7 @@ class RiskAnalysisController extends Controller
             'latestCurrency',
             'latestNews',
             'ports' => function($q) {
-                $q->orderByDesc('congestion')->limit(1);
+                $q->orderByDesc('logistic_risk')->limit(1);
             },
             'economicData'
         ]);
