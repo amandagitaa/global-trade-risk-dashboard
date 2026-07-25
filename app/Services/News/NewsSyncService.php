@@ -283,6 +283,7 @@ class NewsSyncService
                         'impact_score' => 0,
                         'impact_level' => 'Low',
                         'risk_direction' => 'Stable',
+                        'trade_exposure_type' => 'Unknown',
                         'affected_countries' => [],
                         'affected_sectors' => [],
                         'impact_factors' => [],
@@ -332,26 +333,33 @@ class NewsSyncService
                 }
 
                 // Generate Intelligence Summary safely
-                $intelligenceSummary = null;
+                $intelligenceSummary = 'No significant trade impact detected.';
                 try {
                     // Combine necessary data for the summary generator
                     $summaryPayload = array_merge($article, [
                         'category' => $categoryData['category'],
                         'trade_impact' => $tradeImpactData,
                     ]);
-                    $intelligenceSummary = $this->summaryService->generate($summaryPayload);
+                    $intelligenceSummary = $this->summaryService->generate($summaryPayload) ?? 'No significant trade impact detected.';
                 } catch (\Exception $e) {
                     Log::error("NewsSyncService: Failed to generate summary for '{$title}' - " . $e->getMessage());
                 }
 
                 // Map Country & Port Impact safely
-                $mappedImpact = [];
+                $mappedImpact = [
+                    'mapped_countries' => [],
+                    'mapped_ports' => [],
+                    'regional_entities' => [],
+                    'port_impact_type' => 'NONE',
+                    'trade_exposure_type' => 'Unknown',
+                    'mapping_confidence' => 0.00,
+                ];
                 try {
                     $mapperPayload = array_merge($article, [
                         'category' => $categoryData['category'],
                         'trade_impact' => $tradeImpactData,
                     ]);
-                    $mappedImpact = $this->impactMapper->map($mapperPayload);
+                    $mappedImpact = array_merge($mappedImpact, $this->impactMapper->map($mapperPayload));
                 } catch (\Exception $e) {
                     Log::error("NewsSyncService: Failed to map impact for '{$title}' - " . $e->getMessage());
                 }
@@ -383,12 +391,12 @@ class NewsSyncService
                     'impact_factors' => $tradeImpactData['impact_factors'] ?? [],
                     'operational_impact' => $tradeImpactData['operational_impact'] ?? null,
                     'intelligence_summary' => $intelligenceSummary,
-                    'mapped_countries' => $mappedImpact['mapped_countries'] ?? null,
-                    'mapped_ports' => $mappedImpact['mapped_ports'] ?? null,
-                    'regional_entities' => $mappedImpact['regional_entities'] ?? null,
-                    'port_impact_type' => $mappedImpact['port_impact_type'] ?? null,
-                    'trade_exposure_type' => $mappedImpact['trade_exposure_type'] ?? null,
-                    'mapping_confidence' => $mappedImpact['mapping_confidence'] ?? null,
+                    'mapped_countries' => $mappedImpact['mapped_countries'] ?? [],
+                    'mapped_ports' => $mappedImpact['mapped_ports'] ?? [],
+                    'regional_entities' => $mappedImpact['regional_entities'] ?? [],
+                    'port_impact_type' => $mappedImpact['port_impact_type'] ?? 'NONE',
+                    'trade_exposure_type' => $mappedImpact['trade_exposure_type'] ?? 'Unknown',
+                    'mapping_confidence' => $mappedImpact['mapping_confidence'] ?? 0.00,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

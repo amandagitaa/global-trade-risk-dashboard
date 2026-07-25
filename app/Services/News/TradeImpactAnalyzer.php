@@ -52,6 +52,7 @@ class TradeImpactAnalyzer
             'affected_sectors' => $affectedSectors,
             'impact_factors' => array_values(array_unique($events)),
             'operational_impact' => $operationalImpact,
+            'trade_exposure_type' => 'Unknown',
             'confidence' => round(min(max($confidence, 0.0), 1.0), 2)
         ];
     }
@@ -66,6 +67,7 @@ class TradeImpactAnalyzer
             'affected_sectors' => [],
             'impact_factors' => [],
             'operational_impact' => 'No direct operational supply chain or trade event detected.',
+            'trade_exposure_type' => 'Unknown',
             'confidence' => 0.50
         ];
     }

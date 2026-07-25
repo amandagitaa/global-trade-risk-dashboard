@@ -43,7 +43,7 @@ class TradeIntelligenceSummaryService
 
         // Anti-Hallucination Fallback
         if (empty($sentences)) {
-            return "This development may affect international trade operations. The available information indicates {$impactLevel} operational exposure, but the article does not provide enough detail to identify specific supply-chain consequences.";
+            return "No significant trade impact detected.";
         }
 
         return implode(' ', $sentences);
