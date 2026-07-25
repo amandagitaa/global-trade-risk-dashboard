@@ -32,18 +32,40 @@ class NewsCache extends Model
         'source',
 
         'category',
+        'trade_impact',
         'positive_score',
         'negative_score',
         'sentiment',
         'published_at',
         'status',
         'slug',
+        'impact_score',
+        'impact_level',
+        'risk_direction',
+        'impact_confidence',
+        'affected_countries',
+        'affected_sectors',
+        'intelligence_summary',
+        'mapped_countries',
+        'mapped_ports',
+        'regional_entities',
+        'port_impact_type',
+        'trade_exposure_type',
+        'mapping_confidence',
     ];
 
     protected $casts = [
-
         'published_at' => 'datetime',
-
+        'trade_impact' => 'array',
+        'impact_score' => 'integer',
+        'impact_confidence' => 'float',
+        'affected_countries' => 'array',
+        'affected_sectors' => 'array',
+        'impact_factors' => 'array',
+        'mapped_countries' => 'array',
+        'mapped_ports' => 'array',
+        'regional_entities' => 'array',
+        'mapping_confidence' => 'decimal:2',
     ];
 
     public function getRouteKeyName()

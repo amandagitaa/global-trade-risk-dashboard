@@ -3,124 +3,63 @@
 namespace App\Services\News;
 
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class CategoryResolver
 {
     /**
-     * Standard allowed categories
+     * Standard allowed categories exactly as requested.
      */
     protected const ALLOWED_CATEGORIES = [
-        'Business', 'Trade', 'Shipping', 'Logistics', 
-        'Manufacturing', 'Energy', 'Technology', 'Geopolitics'
+        'Business', 'Energy', 'General', 'Geopolitics', 'Logistics', 
+        'Manufacturing', 'Shipping', 'Technology', 'Trade'
     ];
 
     /**
-     * Resolves the category based on the article data.
-     * Returns an array containing resolution details.
-     *
-     * @param array $article
-     * @return array
+     * Resolves the category based on the article data using dominant supply-chain context.
      */
     public function resolve(array $article): array
     {
-        $providerCategory = $article['category'] ?? null;
-        $title = $article['title'] ?? '';
-        $description = $article['description'] ?? '';
-        $content = $article['content'] ?? '';
+        $title = strtolower($article['title'] ?? '');
+        $description = strtolower($article['description'] ?? '');
 
         $keywords = $this->getKeywordsMap();
+        $scores = [];
 
-        // 1. Priority 1: Provider Category
-        if (!empty($providerCategory)) {
-            $mappedCategory = $this->mapProviderCategory($providerCategory);
-            if ($mappedCategory) {
-                $this->logResolution($mappedCategory, 'Provider Category', 'HIGH', $providerCategory);
-                return $this->formatResult($mappedCategory, 'HIGH', 'Provider Category');
+        // Initialize scores
+        foreach (self::ALLOWED_CATEGORIES as $cat) {
+            $scores[$cat] = 0;
+        }
+
+        // Score based on title (x2) and description (x1)
+        foreach ($keywords as $category => $categoryKeywords) {
+            foreach ($categoryKeywords as $keyword) {
+                // Title matches
+                $titleHits = preg_match_all('/\b' . preg_quote($keyword, '/') . '(s|es|d|ed|ing)?\b/i', $title);
+                $scores[$category] += ($titleHits * 2);
+
+                // Description matches
+                $descHits = preg_match_all('/\b' . preg_quote($keyword, '/') . '(s|es|d|ed|ing)?\b/i', $description);
+                $scores[$category] += ($descHits * 1);
             }
         }
 
-        // 2. Priority 2: Keyword Title
-        if (!empty($title)) {
-            $match = $this->searchKeywords($title, $keywords);
-            if ($match) {
-                $this->logResolution($match['category'], 'Title Match', 'HIGH', $match['keyword']);
-                return $this->formatResult($match['category'], 'HIGH', 'Title Match');
+        // Find the maximum score
+        $maxScore = 0;
+        $dominantCategory = null;
+
+        foreach ($scores as $category => $score) {
+            if ($score > $maxScore) {
+                $maxScore = $score;
+                $dominantCategory = $category;
             }
         }
 
-        // 3. Priority 3: Keyword Description
-        if (!empty($description)) {
-            $match = $this->searchKeywords($description, $keywords);
-            if ($match) {
-                $this->logResolution($match['category'], 'Description Match', 'MEDIUM', $match['keyword']);
-                return $this->formatResult($match['category'], 'MEDIUM', 'Description Match');
-            }
+        if ($dominantCategory && $maxScore > 0) {
+            return $this->formatResult($dominantCategory, 'HIGH', 'Dominant Context Match');
         }
 
-        // 4. Priority 4: Keyword Content
-        if (!empty($content)) {
-            $match = $this->searchKeywords($content, $keywords);
-            if ($match) {
-                $this->logResolution($match['category'], 'Content Match', 'LOW', $match['keyword']);
-                return $this->formatResult($match['category'], 'LOW', 'Content Match');
-            }
-        }
-
-        // 5. Priority 5: Fallback Business
-        $this->logResolution('Business', 'Fallback', 'LOW', 'None');
-        return $this->formatResult('Business', 'LOW', 'Fallback');
-    }
-
-    /**
-     * Searches for keywords in a given text.
-     */
-    protected function searchKeywords(string $text, array $keywordsMap): ?array
-    {
-        foreach ($keywordsMap as $category => $keywords) {
-            foreach ($keywords as $keyword) {
-                if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/i', $text)) {
-                    return [
-                        'category' => $category,
-                        'keyword' => $keyword
-                    ];
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Maps a raw provider category string to one of the standard categories.
-     */
-    protected function mapProviderCategory(string $rawCategory): ?string
-    {
-        $raw = strtolower(trim($rawCategory));
-        
-        // Direct match case-insensitive
-        foreach (self::ALLOWED_CATEGORIES as $allowed) {
-            if (strtolower($allowed) === $raw) {
-                return $allowed;
-            }
-        }
-
-        // Partial match mappings
-        $mapping = [
-            'tech' => 'Technology',
-            'health' => 'Business', 
-            'science' => 'Technology',
-            'sports' => 'Business', 
-            'entertainment' => 'Business',
-            'world' => 'Geopolitics',
-            'nation' => 'Geopolitics',
-            'economy' => 'Trade',
-            'finance' => 'Business',
-            'transportation' => 'Shipping',
-            'supply chain' => 'Logistics'
-        ];
-
-        return $mapping[$raw] ?? 'Business';
+        // Fallback Category
+        return $this->formatResult('General', 'LOW', 'Fallback');
     }
 
     /**
@@ -136,42 +75,43 @@ class CategoryResolver
     }
 
     /**
-     * Logs the resolution outcome.
-     */
-    protected function logResolution(string $category, string $method, string $confidence, string $keyword): void
-    {
-        Log::info("CategoryResolver: Matched [{$category}] via [{$method}] (Keyword: {$keyword}) with [{$confidence}] confidence.");
-    }
-
-    /**
-     * Dictionary of categories and their associated keywords.
+     * Dictionary of categories and their associated keywords based on supply chain context.
      */
     protected function getKeywordsMap(): array
     {
         return [
-            'Business' => [
-                'company', 'corporation', 'enterprise', 'startup', 'investment', 'merger', 'acquisition', 'finance', 'economy', 'market'
-            ],
-            'Trade' => [
-                'export', 'import', 'tariff', 'custom', 'trade agreement', 'wto', 'freetrade', 'sanctions', 'embargo'
-            ],
             'Shipping' => [
-                'shipping', 'port', 'cargo', 'container', 'vessel', 'freight', 'maersk', 'canal', 'maritime'
+                'shipping', 'maritime', 'vessel', 'container ship', 'cargo ship', 
+                'tanker', 'port', 'seaport', 'ocean freight', 'shipping route', 'shipping disruption'
             ],
             'Logistics' => [
-                'supplier', 'distribution', 'warehouse', 'inventory', 'delivery', 'fleet', 'last mile', 'cold chain'
+                'logistics', 'freight', 'warehouse', 'warehousing', 'distribution', 
+                'delivery network', 'transport network', 'supply chain operations'
+            ],
+            'Trade' => [
+                'export', 'import', 'tariff', 'customs', 'trade agreement', 
+                'trade turnover', 'trade flow', 'international trade', 'global trade', 'trade restriction',
+                'trade practice', 'trade investigation', 'trade dispute', 'trade policy'
             ],
             'Manufacturing' => [
-                'factory', 'production', 'assembly', 'industrial', 'plant', 'semiconductor', 'chip'
+                'factory', 'production', 'manufacturer', 'industrial production', 
+                'manufacturing supply chain', 'supplier production', 'manufacturing plant'
             ],
             'Energy' => [
-                'oil', 'gas', 'coal', 'renewable', 'electricity', 'solar', 'wind', 'lng'
+                'oil', 'gas', 'lng', 'energy supply', 'oil tanker', 
+                'energy shipment', 'fuel supply', 'energy trade'
             ],
             'Technology' => [
-                'AI', 'robot', 'automation', 'software', 'rfid', 'iot', 'digital twin', 'erp'
+                'ai', 'automation', 'iot', 'semiconductor', 'chip', 
+                'digital supply chain', 'supply-chain technology'
             ],
             'Geopolitics' => [
-                'election', 'government', 'diplomacy', 'geopolitics', 'war', 'conflict', 'red sea', 'taiwan'
+                'sanctions', 'trade war', 'blockade', 'conflict', 
+                'geopolitical trade risk', 'strait of hormuz', 'red sea', 'government trade restrictions'
+            ],
+            'Business' => [
+                'company supply-chain strategy', 'supplier agreement', 'procurement', 
+                'corporate logistics', 'supply-chain investment', 'company trade expansion'
             ]
         ];
     }

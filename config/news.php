@@ -17,12 +17,13 @@ return [
     'category_limit' => 10,
     'categories' => [
         'Business',
-        'Trade',
-        'Technology',
-        'Shipping',
+        'Energy',
+        'General',
+        'Geopolitics',
         'Logistics',
         'Manufacturing',
-        'Energy',
-        'Geopolitics',
+        'Shipping',
+        'Technology',
+        'Trade',
     ],
 ];

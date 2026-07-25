@@ -25,21 +25,29 @@ class NewsApiService implements NewsProviderInterface
 
     public function fetchLatest(): Collection
     {
-        $categories = config('news.categories', [
-            'business',
-            'trade',
-            'technology',
-            'shipping',
-            'logistics',
-            'manufacturing',
-            'energy',
-            'geopolitics'
-        ]);
+        // Using explicit OR and exact phrases to avoid overlap
+        $queries = [
+            'Business' => '"procurement" OR "supplier network" OR "supply-chain operations" OR "sourcing"',
+            'Energy' => '"oil tanker" OR "LNG shipping" OR "energy supply disruption" OR "oil supply chain"',
+            'General' => '"global supply chain disruption" OR "supply chain resilience"',
+            'Geopolitics' => '"shipping sanctions" OR "trade sanctions" OR "blockade trade" OR "shipping route conflict" OR "trade route disruption"',
+            'Logistics' => '"freight logistics" OR "warehousing" OR "distribution" OR "rail freight" OR "trucking logistics"',
+            'Manufacturing' => '"factory production" OR "supplier shortages" OR "manufacturing disruption" OR "industrial production"',
+            'Shipping' => '"container shipping" OR "ocean freight" OR "vessel operations" OR "port congestion" OR "shipping routes"',
+            'Technology' => '"semiconductor supply chain" OR "warehouse automation" OR "logistics technology" OR "supply-chain AI"',
+            'Trade' => '"exports" OR "imports" OR "tariffs" OR "customs" OR "trade restrictions" OR "trade agreements"'
+        ];
 
         $allArticles = collect();
 
-        foreach ($categories as $category) {
-            $articles = $this->executeFetch(strtolower($category));
+        foreach ($queries as $category => $query) {
+            $articles = $this->executeFetch($query);
+            // Append the query category to the article array so SyncService knows origin query
+            $articles = $articles->map(function ($article) use ($category, $query) {
+                $article['api_category'] = $category;
+                $article['api_query'] = $query;
+                return $article;
+            });
             $allArticles = $allArticles->merge($articles);
         }
 
@@ -82,57 +90,81 @@ class NewsApiService implements NewsProviderInterface
         return !empty($this->config['api_key']);
     }
 
+    protected int $apiEmptyCount = 0;
+    protected int $providerFailureCount = 0;
+
+    public function getApiEmptyCount(): int
+    {
+        return $this->apiEmptyCount;
+    }
+
+    public function getProviderFailureCount(): int
+    {
+        return $this->providerFailureCount;
+    }
+
+    public function resetCounters(): void
+    {
+        $this->apiEmptyCount = 0;
+        $this->providerFailureCount = 0;
+    }
+
     /**
      * Executes the fetch with a cascading fallback strategy.
      */
-    protected function executeFetch(string $category, string $countryCode = null): Collection
+    protected function executeFetch(string $query, string $countryCode = null): Collection
     {
-        $providers = ['newsdata', 'gnews', 'rss'];
+        $providers = ['newsdata', 'gnews'];
         $primary = $this->config['provider'] ?? 'newsdata';
 
-        // Move primary provider to the top of the attempt list
         $providers = array_diff($providers, [$primary]);
         array_unshift($providers, $primary);
 
         foreach ($providers as $provider) {
             try {
-                Log::info("NewsApiService: Attempting fetch using provider [{$provider}]");
+                Log::info("NewsApiService: Attempting fetch using provider [{$provider}] for query [{$query}]");
                 
                 $startTime = microtime(true);
-                $articles = $this->fetchFromProvider($provider, $category, $countryCode);
+                $articles = $this->fetchFromProvider($provider, $query, $countryCode);
                 $duration = round((microtime(true) - $startTime) * 1000, 2);
                 
-                if ($articles->isNotEmpty()) {
-                    Log::info("NewsApiService: Successfully fetched {$articles->count()} articles from [{$provider}] in {$duration}ms");
-                    return $articles;
+                if ($articles->isEmpty()) {
+                    Log::info("NewsApiService: Provider [{$provider}] returned 0 articles for query [{$query}].");
+                    $this->apiEmptyCount++;
+                    return $articles; // Zero articles is a valid result. Do not fall back.
                 }
                 
-                Log::warning("NewsApiService: Provider [{$provider}] returned 0 articles.");
+                Log::info("NewsApiService: Successfully fetched {$articles->count()} articles from [{$provider}] in {$duration}ms");
+                return $articles;
 
-            } catch (\Illuminate\Http\Client\ConnectionException $e) {
-                Log::error("NewsApiService: Connection timeout/error on [{$provider}] - " . $e->getMessage());
             } catch (\Exception $e) {
-                Log::error("NewsApiService: API Error on [{$provider}] - " . $e->getMessage());
+                $msg = $e->getMessage();
+                Log::error("NewsApiService: Provider Failure on [{$provider}] - {$msg}");
+                
+                if (str_contains($msg, 'API Key is missing')) {
+                    throw new \Exception("{$provider} API key is not configured. Supply-chain news synchronization cannot use the primary provider. Please configure NEWS_API_KEY in your .env file.");
+                }
+                
+                $this->providerFailureCount++;
             }
             
-            Log::warning("NewsApiService: Falling back to next provider...");
+            Log::warning("NewsApiService: Falling back to next provider due to failure...");
         }
 
         Log::error("NewsApiService: All providers failed to fetch news.");
         return collect([]);
     }
 
-    protected function fetchFromProvider(string $provider, string $category, ?string $countryCode): Collection
+    protected function fetchFromProvider(string $provider, string $query, ?string $countryCode): Collection
     {
         return match ($provider) {
-            'newsdata' => $this->newsDataIoStrategy($category, $countryCode),
-            'gnews'    => $this->gNewsStrategy($category, $countryCode),
-            'rss'      => $this->rssFallbackStrategy($category),
+            'newsdata' => $this->newsDataIoStrategy($query, $countryCode),
+            'gnews'    => $this->gNewsStrategy($query, $countryCode),
             default    => collect([]),
         };
     }
 
-    protected function newsDataIoStrategy(string $category, ?string $countryCode): Collection
+    protected function newsDataIoStrategy(string $query, ?string $countryCode): Collection
     {
         $apiKey = $this->config['api_key'];
         if (empty($apiKey)) {
@@ -140,9 +172,10 @@ class NewsApiService implements NewsProviderInterface
         }
 
         $url = "https://newsdata.io/api/1/news";
+        
         $params = [
             'apikey' => $apiKey,
-            'category' => $category,
+            'q' => $query,
             'language' => $this->config['language'],
         ];
 
@@ -179,7 +212,8 @@ class NewsApiService implements NewsProviderInterface
                 publishedAt: $item['pubDate'] ?? null,
                 language: $item['language'] ?? $this->config['language'],
                 countryCode: $item['country'][0] ?? 'Global',
-                category: $item['category'][0] ?? $category,
+                // Category is resolved later in NewsSyncService
+                category: 'unknown',
                 provider: 'newsdata'
             );
         }
@@ -188,23 +222,19 @@ class NewsApiService implements NewsProviderInterface
         return collect($articles)->take($limit);
     }
 
-    protected function gNewsStrategy(string $category, ?string $countryCode): Collection
+    protected function gNewsStrategy(string $query, ?string $countryCode): Collection
     {
         $apiKey = $this->config['api_key'];
         if (empty($apiKey)) {
             throw new \Exception("GNews API Key is missing");
         }
 
-        // GNews has specific allowed categories
-        $allowedCategories = ['general', 'world', 'nation', 'business', 'technology', 'entertainment', 'sports', 'science', 'health'];
-        $queryCategory = in_array($category, $allowedCategories) ? $category : 'business';
-
-        $url = "https://gnews.io/api/v4/top-headlines";
+        $url = "https://gnews.io/api/v4/search";
         
         $limit = config('news.category_limit', 10);
         $params = [
             'apikey' => $apiKey,
-            'category' => $queryCategory,
+            'q' => $query,
             'lang' => $this->config['language'],
             'max' => min($limit, 100),
         ];
@@ -242,7 +272,7 @@ class NewsApiService implements NewsProviderInterface
                 publishedAt: $item['publishedAt'] ?? null,
                 language: $this->config['language'],
                 countryCode: $countryCode ?? 'Global',
-                category: $category,
+                category: 'unknown',
                 provider: 'gnews'
             );
         }

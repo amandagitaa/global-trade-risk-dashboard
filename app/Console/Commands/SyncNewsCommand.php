@@ -16,9 +16,16 @@ class SyncNewsCommand extends Command
         $this->info('Starting News Synchronization...');
         Log::info('Console: Executing news:sync');
         
-        $syncService->sync();
+        $syncService->setCommand($this);
         
-        $this->info('News Synchronization completed successfully.');
-        return Command::SUCCESS;
+        try {
+            $syncService->sync();
+            $this->info('News Synchronization completed successfully.');
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $this->error('News Synchronization failed:');
+            $this->error($e->getMessage());
+            return Command::FAILURE;
+        }
     }
 }

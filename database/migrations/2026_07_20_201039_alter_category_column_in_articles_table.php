@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Safe conversion from ENUM to VARCHAR
-        \Illuminate\Support\Facades\DB::statement('ALTER TABLE articles MODIFY category VARCHAR(150) NOT NULL');
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            \Illuminate\Support\Facades\DB::statement('ALTER TABLE articles MODIFY category VARCHAR(150) NOT NULL');
+        }
     }
 
     /**

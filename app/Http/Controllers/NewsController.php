@@ -43,6 +43,18 @@ class NewsController extends Controller
             $query->where('sentiment', $request->sentiment);
         }
 
+        if ($request->filled('impact_level')) {
+            $query->where('impact_level', $request->impact_level);
+        }
+
+        if ($request->filled('risk_direction')) {
+            $query->where('risk_direction', $request->risk_direction);
+        }
+
+        if ($request->filled('trade_exposure_type')) {
+            $query->where('trade_exposure_type', $request->trade_exposure_type);
+        }
+
         $news = $query->latest('published_at')->paginate(9)->withQueryString();
 
         $ttl = config('news.cache_ttl', 3600);
@@ -51,22 +63,40 @@ class NewsController extends Controller
             return Country::orderBy('country_name')->get();
         });
         
-        $categories = \Illuminate\Support\Facades\Cache::remember('news_categories_list', $ttl, function() {
-            return NewsCache::select('category')->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
-        });
+        $categories = [
+            'Business', 'Energy', 'General', 'Geopolitics', 'Logistics', 
+            'Manufacturing', 'Shipping', 'Technology', 'Trade'
+        ];
         
         $sources = \Illuminate\Support\Facades\Cache::remember('news_sources_list', $ttl, function() {
             return NewsCache::select('source')->whereNotNull('source')->distinct()->orderBy('source')->pluck('source');
         });
 
-        $stats = \Illuminate\Support\Facades\Cache::remember('news_global_stats', $ttl, function() {
+        $stats = \Illuminate\Support\Facades\Cache::remember('news_global_stats_v2', $ttl, function() {
+            $allCountries = NewsCache::whereNotNull('mapped_countries')->pluck('mapped_countries');
+            $allRegions = NewsCache::whereNotNull('regional_entities')->pluck('regional_entities');
+            
+            $uniqueGeo = collect();
+            foreach ($allCountries as $countries) {
+                if (is_array($countries)) {
+                    foreach ($countries as $c) {
+                        $uniqueGeo->push($c['name'] ?? null);
+                    }
+                }
+            }
+            foreach ($allRegions as $regions) {
+                if (is_array($regions)) {
+                    foreach ($regions as $r) {
+                        $uniqueGeo->push($r['name'] ?? null);
+                    }
+                }
+            }
+
             return [
                 'totalNews' => NewsCache::count(),
-                'positiveNews' => NewsCache::where('sentiment', 'Positive')->count(),
-                'neutralNews' => NewsCache::where('sentiment', 'Neutral')->count(),
-                'negativeNews' => NewsCache::where('sentiment', 'Negative')->count(),
-                'totalSources' => NewsCache::whereNotNull('source')->distinct()->count('source'),
-                'totalCategories' => NewsCache::whereNotNull('category')->distinct()->count('category'),
+                'highImpactCount' => NewsCache::where('impact_level', 'High')->count(),
+                'increasingRiskCount' => NewsCache::where('risk_direction', 'Increasing')->count(),
+                'affectedCountriesCount' => $uniqueGeo->filter()->unique()->count(),
                 'latestUpdate' => NewsCache::max('updated_at')
             ];
         });
@@ -75,8 +105,8 @@ class NewsController extends Controller
 
         return view('news.index', compact(
             'news', 'countries', 'categories', 'sources', 'totalNews', 
-            'positiveNews', 'neutralNews', 'negativeNews', 'totalSources', 
-            'totalCategories', 'latestUpdate'
+            'highImpactCount', 'increasingRiskCount', 'affectedCountriesCount', 
+            'latestUpdate'
         ));
     }
 

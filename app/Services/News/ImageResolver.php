@@ -52,9 +52,9 @@ class ImageResolver
         }
 
         // 5. Priority 5: No image found
-        $this->logResolution('none', 'No Image Found');
+        $this->logResolution('images/news/placeholder.jpg', 'Fallback Placeholder');
         
-        return '';
+        return $this->getFallbackImage();
     }
 
     /**
@@ -137,12 +137,11 @@ class ImageResolver
     }
 
     /**
-     * Provides a default fallback image based on the category.
-     * (Deprecated: System no longer uses fallback dummy images)
+     * Provides a default fallback image based on the category or a generic placeholder.
      */
-    protected function getFallbackImage(string $category): string
+    protected function getFallbackImage(?string $category = null): string
     {
-        return '';
+        return 'images/news/placeholder.jpg';
     }
 
     /**
