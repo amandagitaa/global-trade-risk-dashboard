@@ -10,6 +10,10 @@ class PortSeeder extends Seeder
 {
     public function run(): void
     {
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        Port::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+        
         $file = database_path('data/ports.csv');
 
         if (!file_exists($file)) {
@@ -38,20 +42,22 @@ class PortSeeder extends Seeder
                 continue;
             }
 
-    $port = array_combine($header, $row);
-        if (!isset($port['description'])) {
-        $this->command->warn('Description column not found.');
-        continue;
-    }
+            $port = array_combine($header, $row);
 
-    $country = Country::where(
-            'country_code',
-            $port['country_iso2']
-        )->first();
+            if (!isset($port['description'])) {
+                $this->command->warn('Description column not found.');
+                continue;
+            }
 
-        if (!$country) {
-            continue;
-}
+            $country = Country::where(
+                'country_code',
+                $port['country_iso2']
+            )->first();
+
+            if (!$country) {
+                continue;
+            }
+
             Port::updateOrCreate(
                 [
                     'code'=>$port['code']
