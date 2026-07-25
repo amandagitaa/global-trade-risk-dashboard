@@ -22,31 +22,28 @@ class RiskScoreSeeder extends Seeder
 
 
             $final = round(
-                (
-                    $weather +
-                    $port +
-                    $currency +
-                    $economic +
-                    $news
-                ) / 5
+                ($weather * 0.25) +
+                ($currency * 0.20) +
+                ($economic * 0.15) +
+                ($port * 0.20) +
+                ($news * 0.20), 2
             );
 
-
-            if ($final >= 50) {
-
-                $level = 'alert';
-                $reason = 'High trade risk detected';
-
-            } elseif ($final >= 30) {
-
-                $level = 'stable';
-                $reason = 'Moderate trade condition';
-
-            } else {
-
+            if ($final <= 20) {
                 $level = 'safe';
                 $reason = 'Low trade risk';
-
+            } elseif ($final <= 40) {
+                $level = 'stable';
+                $reason = 'Moderate trade condition';
+            } elseif ($final <= 60) {
+                $level = 'alert';
+                $reason = 'Elevated trade risk detected';
+            } elseif ($final <= 80) {
+                $level = 'dangerous';
+                $reason = 'High trade risk detected';
+            } else {
+                $level = 'critical';
+                $reason = 'Critical trade risk detected';
             }
 
 

@@ -89,34 +89,34 @@ class RiskAnalysisController extends Controller
 
         if ($riskScore) {
             if ($riskScore->port_score >= 60) {
-                $drivers->push(['factor' => 'Port Congestion', 'impact' => 'HIGH IMPACT']);
-                $impacts->push(['risk' => 'Port Disruption', 'level' => 'HIGH', 'reason' => 'Severe port congestion increases logistics risk.']);
+                $drivers->push(['factor' => 'High Logistics / Port Risk', 'impact' => 'HIGH IMPACT']);
+                $impacts->push(['risk' => 'Logistics Disruption', 'level' => 'HIGH', 'reason' => 'Elevated logistics risk could increase the probability of shipping delays or additional transportation costs.']);
             } elseif ($riskScore->port_score >= 40) {
-                $drivers->push(['factor' => 'Port Operations', 'impact' => 'MEDIUM IMPACT']);
-                $impacts->push(['risk' => 'Port Disruption', 'level' => 'MEDIUM', 'reason' => 'Moderate port delays detected.']);
+                $drivers->push(['factor' => 'Moderate Logistics / Port Risk', 'impact' => 'MEDIUM IMPACT']);
+                $impacts->push(['risk' => 'Logistics Disruption', 'level' => 'MEDIUM', 'reason' => 'Moderate port risk indicates potential supply chain slowdowns.']);
             }
 
             if ($riskScore->currency_score >= 60) {
-                $drivers->push(['factor' => 'Currency Volatility', 'impact' => 'HIGH IMPACT']);
-                $impacts->push(['risk' => 'Import Cost Pressure', 'level' => 'HIGH', 'reason' => 'Extreme exchange rate fluctuations.']);
+                $drivers->push(['factor' => 'High Currency Volatility', 'impact' => 'HIGH IMPACT']);
+                $impacts->push(['risk' => 'Import Cost Pressure', 'level' => 'HIGH', 'reason' => 'Significant currency risk may lead to extreme exchange rate fluctuations.']);
             } elseif ($riskScore->currency_score >= 35) {
-                $drivers->push(['factor' => 'Currency Depreciation', 'impact' => 'MEDIUM IMPACT']);
-                $impacts->push(['risk' => 'Import Cost Pressure', 'level' => 'MEDIUM', 'reason' => 'Noticeable currency changes may affect pricing.']);
+                $drivers->push(['factor' => 'Elevated Currency Risk', 'impact' => 'MEDIUM IMPACT']);
+                $impacts->push(['risk' => 'Import Cost Pressure', 'level' => 'MEDIUM', 'reason' => 'Noticeable currency risk indicates potential impact on pricing margins.']);
             }
 
             if ($riskScore->economic_score >= 60) {
-                $drivers->push(['factor' => 'Economic Instability', 'impact' => 'HIGH IMPACT']);
-                $impacts->push(['risk' => 'Market Demand', 'level' => 'HIGH', 'reason' => 'High economic risk threatens purchasing power.']);
+                $drivers->push(['factor' => 'Elevated Economic Risk', 'impact' => 'HIGH IMPACT']);
+                $impacts->push(['risk' => 'Market Demand', 'level' => 'HIGH', 'reason' => 'High economic risk may threaten local purchasing power and trade stability.']);
             }
 
             if ($riskScore->weather_score >= 60) {
-                $drivers->push(['factor' => 'Extreme Weather', 'impact' => 'HIGH IMPACT']);
-                $impacts->push(['risk' => 'Supply Disruption', 'level' => 'HIGH', 'reason' => 'Severe weather conditions threaten infrastructure.']);
+                $drivers->push(['factor' => 'Elevated Weather / Climate Risk', 'impact' => 'HIGH IMPACT']);
+                $impacts->push(['risk' => 'Supply Disruption', 'level' => 'HIGH', 'reason' => 'Severe weather indicators suggest potential disruptions to physical infrastructure.']);
             }
 
             if ($riskScore->news_score >= 60) {
-                $drivers->push(['factor' => 'Geopolitical Tension', 'impact' => 'HIGH IMPACT']);
-                $impacts->push(['risk' => 'Trade Restrictions', 'level' => 'HIGH', 'reason' => 'Negative news sentiment indicates potential policy shifts or instability.']);
+                $drivers->push(['factor' => 'Elevated News / Trade Sentiment Risk', 'impact' => 'HIGH IMPACT']);
+                $impacts->push(['risk' => 'Policy / Market Sentiment', 'level' => 'HIGH', 'reason' => 'Negative news sentiment indicates potential policy shifts or market instability.']);
             }
         }
 

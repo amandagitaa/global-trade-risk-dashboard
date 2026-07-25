@@ -290,7 +290,10 @@
                         <div class="card-body">
                             <h6 class="fw-bold"><i class="bi bi-currency-exchange"></i> Currency Movement</h6>
                             @if($country->latestCurrency)
-                                <p class="mb-2">1 USD = {{ $country->latestCurrency->rate }} ({{ $country->latestCurrency->change_percentage }}%)</p>
+                                <p class="mb-1">1 {{ $country->latestCurrency->base_currency ?? 'USD' }} = {{ $country->latestCurrency->exchange_rate }} {{ $country->latestCurrency->target_currency ?? 'USD' }}</p>
+                                @if(isset($country->latestCurrency->change_percentage))
+                                    <small class="text-muted">Change: {{ $country->latestCurrency->change_percentage > 0 ? '+' : '' }}{{ $country->latestCurrency->change_percentage }}%</small>
+                                @endif
                             @else
                                 <p class="text-muted mb-2">Data unavailable</p>
                             @endif

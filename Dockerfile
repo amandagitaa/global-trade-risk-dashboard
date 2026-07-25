@@ -35,7 +35,7 @@ RUN npm install
 
 RUN npm run build
 
-RUN php artisan config:clear
+RUN php artisan storage:link || true
 
 EXPOSE 8080
 
