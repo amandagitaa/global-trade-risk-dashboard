@@ -63,9 +63,31 @@ class RepairIntelligenceCommand extends Command
         $updated = 0;
         $skipped = 0;
         $failed = 0;
+        
+        $dirtyFieldsCount = [
+            'risk_direction' => 0, 'impact_score' => 0, 'impact_level' => 0,
+            'trade_exposure_type' => 0, 'operational_factors' => 0,
+            'mapped_countries' => 0, 'mapped_ports' => 0, 'affected_sectors' => 0,
+            'intelligence_summary' => 0,
+        ];
+        
+        $directionTransitions = [
+            'Increasing -> Decreasing' => 0, 'Increasing -> Stable' => 0,
+            'Stable -> Increasing' => 0, 'Stable -> Decreasing' => 0,
+            'Decreasing -> Increasing' => 0, 'Decreasing -> Stable' => 0,
+            'Unchanged' => 0
+        ];
+        
+        $changeCategories = [
+            'summary_only' => 0, 'exposure_only' => 0, 'mapping_only' => 0,
+            'score_only' => 0, 'multiple_fields' => 0, 'score_jump_over_20' => 0
+        ];
+        
+        $examples = [];
 
         $query->chunkById(100, function ($articles) use (
             &$processed, &$updated, &$skipped, &$failed, $isDryRun,
+            &$dirtyFieldsCount, &$directionTransitions, &$changeCategories, &$examples,
             $tradeImpactAnalyzer, $impactMapper, $summaryService
         ) {
             foreach ($articles as $article) {
@@ -183,16 +205,70 @@ class RepairIntelligenceCommand extends Command
                     if (!$article->isDirty()) {
                         $skipped++;
                     } else {
-                        if ($isDryRun) {
-                            $this->line("[DRY RUN] Change detected for ID {$article->id}: Direction '{$oldDirection}' -> '{$newDirection}', Exposure '{$oldExposure}' -> '{$newExposure}'");
-                            $dirty = $article->getDirty();
-                            foreach ($dirty as $k => $v) {
-                                $oldVal = $article->getOriginal($k);
-                                $oldStr = is_array($oldVal) ? json_encode($oldVal) : $oldVal;
-                                $newStr = is_array($v) ? json_encode($v) : $v;
-                                $this->line("  DIRTY $k: OLD => $oldStr | NEW => $newStr");
+                        $dirty = $article->getDirty();
+                        
+                        // Track individual fields
+                        foreach (array_keys($dirty) as $field) {
+                            if (isset($dirtyFieldsCount[$field])) {
+                                $dirtyFieldsCount[$field]++;
                             }
+                        }
+                        
+                        // Direction Transitions
+                        $transitionKey = "{$oldDirection} -> {$newDirection}";
+                        if ($oldDirection === $newDirection) {
+                            $directionTransitions['Unchanged']++;
                         } else {
+                            if (isset($directionTransitions[$transitionKey])) {
+                                $directionTransitions[$transitionKey]++;
+                            } else {
+                                $directionTransitions[$transitionKey] = 1;
+                            }
+                            
+                            // Representative examples
+                            if (!isset($examples[$transitionKey]) || count($examples[$transitionKey]) < 5) {
+                                $examples[$transitionKey][] = "ID: {$article->id} | Title: {$title}\n    OLD: {$oldDirection} | NEW: {$newDirection}";
+                            }
+                        }
+                        
+                        // Score jump > 20
+                        $oldScore = $articleData['impact_score'] ?? 0;
+                        $newScore = $newData['impact_score'] ?? 0;
+                        if (abs($newScore - $oldScore) > 20) {
+                            $changeCategories['score_jump_over_20']++;
+                        }
+
+                        // Exclusive change logic
+                        $dirtyKeys = array_keys($dirty);
+                        $hasSummary = in_array('intelligence_summary', $dirtyKeys);
+                        $hasExposure = in_array('trade_exposure_type', $dirtyKeys);
+                        $hasMapping = in_array('mapped_countries', $dirtyKeys) || in_array('mapped_ports', $dirtyKeys) || in_array('regional_entities', $dirtyKeys);
+                        $hasScore = in_array('impact_score', $dirtyKeys) || in_array('impact_level', $dirtyKeys);
+
+                        if ($hasSummary && count($dirtyKeys) === 1) $changeCategories['summary_only']++;
+                        if ($hasExposure && count($dirtyKeys) === 1) $changeCategories['exposure_only']++;
+                        
+                        $mappingFieldsOnly = true;
+                        foreach ($dirtyKeys as $f) {
+                            if (!in_array($f, ['mapped_countries', 'mapped_ports', 'regional_entities', 'mapping_confidence'])) {
+                                $mappingFieldsOnly = false;
+                            }
+                        }
+                        if ($mappingFieldsOnly && $hasMapping) $changeCategories['mapping_only']++;
+
+                        $scoreFieldsOnly = true;
+                        foreach ($dirtyKeys as $f) {
+                            if (!in_array($f, ['impact_score', 'impact_level', 'impact_confidence'])) {
+                                $scoreFieldsOnly = false;
+                            }
+                        }
+                        if ($scoreFieldsOnly && $hasScore) $changeCategories['score_only']++;
+                        
+                        if (count($dirtyKeys) > 1 && !$mappingFieldsOnly && !$scoreFieldsOnly) {
+                            $changeCategories['multiple_fields']++;
+                        }
+                        
+                        if (!$isDryRun) {
                             $article->save();
                         }
                         $updated++;
@@ -214,6 +290,35 @@ class RepairIntelligenceCommand extends Command
         $this->line($isDryRun ? "Would Update: {$updated}" : "Updated: {$updated}");
         $this->line("Skipped: {$skipped}");
         $this->line("Failed: {$failed}");
+        
+        if ($isDryRun) {
+            $this->line(str_repeat('-', 50));
+            $this->info("FIELD CHANGE COUNTS");
+            foreach ($dirtyFieldsCount as $field => $count) {
+                $this->line("{$field}: {$count}");
+            }
+            
+            $this->line(str_repeat('-', 50));
+            $this->info("RISK DIRECTION TRANSITIONS");
+            foreach ($directionTransitions as $transition => $count) {
+                $this->line("{$transition}: {$count}");
+            }
+            
+            $this->line(str_repeat('-', 50));
+            $this->info("DIAGNOSTIC GROUPS");
+            foreach ($changeCategories as $cat => $count) {
+                $this->line("{$cat}: {$count}");
+            }
+            
+            $this->line(str_repeat('-', 50));
+            $this->info("REPRESENTATIVE EXAMPLES");
+            foreach ($examples as $transition => $items) {
+                $this->info("Transition: {$transition}");
+                foreach ($items as $item) {
+                    $this->line("  - {$item}");
+                }
+            }
+        }
         $this->line(str_repeat('=', 50));
 
         return Command::SUCCESS;
