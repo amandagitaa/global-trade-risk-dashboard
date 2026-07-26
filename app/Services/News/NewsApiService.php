@@ -27,21 +27,21 @@ class NewsApiService implements NewsProviderInterface
     {
         // Using explicit OR and exact phrases to avoid overlap
         $queries = [
-            'Business' => '"procurement" OR "supplier network" OR "supply-chain operations" OR "sourcing"',
-            'Energy' => '"oil tanker" OR "LNG shipping" OR "energy supply disruption" OR "oil supply chain"',
-            'General' => '"global supply chain disruption" OR "supply chain resilience"',
-            'Geopolitics' => '"shipping sanctions" OR "trade sanctions" OR "blockade trade" OR "shipping route conflict" OR "trade route disruption"',
-            'Logistics' => '"freight logistics" OR "warehousing" OR "distribution" OR "rail freight" OR "trucking logistics"',
-            'Manufacturing' => '"factory production" OR "supplier shortages" OR "manufacturing disruption" OR "industrial production"',
-            'Shipping' => '"container shipping" OR "ocean freight" OR "vessel operations" OR "port congestion" OR "shipping routes"',
-            'Technology' => '"semiconductor supply chain" OR "warehouse automation" OR "logistics technology" OR "supply-chain AI"',
-            'Trade' => '"exports" OR "imports" OR "tariffs" OR "customs" OR "trade restrictions" OR "trade agreements"'
+            'Business' => '"industrial investment" OR "supplier" OR "procurement"',
+            'Energy' => '"oil supply" OR "LNG shipping" OR "energy supply"',
+            'General' => '"global supply chain" OR "supply chain disruption"',
+            'Geopolitics' => '"trade sanctions" OR "export ban" OR "trade conflict"',
+            'Logistics' => '"supply chain" OR "logistics disruption" OR "procurement"',
+            'Manufacturing' => '"manufacturing disruption" OR "factory production" OR "semiconductor supply"',
+            'Shipping' => '"container shipping" OR "port congestion" OR "freight rates"',
+            'Technology' => '"semiconductor export" OR "chip supply" OR "AI chip"',
+            'Trade' => '"tariff" OR "trade restriction" OR "export control"'
         ];
 
         $allArticles = collect();
 
         foreach ($queries as $category => $query) {
-            $articles = $this->executeFetch($query);
+            $articles = $this->executeFetch($query, null, $category);
             // Append the query category to the article array so SyncService knows origin query
             $articles = $articles->map(function ($article) use ($category, $query) {
                 $article['api_category'] = $category;
@@ -56,32 +56,32 @@ class NewsApiService implements NewsProviderInterface
 
     public function fetchBusiness(): Collection
     {
-        return $this->executeFetch('business');
+        return $this->executeFetch('business', null, 'Business');
     }
 
     public function fetchTrade(): Collection
     {
-        return $this->executeFetch('trade');
+        return $this->executeFetch('trade', null, 'Trade');
     }
 
     public function fetchEconomy(): Collection
     {
-        return $this->executeFetch('economy');
+        return $this->executeFetch('economy', null, 'Economy');
     }
 
     public function fetchByCategory(string $category): Collection
     {
-        return $this->executeFetch($category);
+        return $this->executeFetch($category, null, $category);
     }
 
     public function fetchByCountry(string $countryCode): Collection
     {
-        return $this->executeFetch('business', $countryCode);
+        return $this->executeFetch('business', $countryCode, 'Business');
     }
 
     public function fetchEverything(): Collection
     {
-        return $this->executeFetch('global');
+        return $this->executeFetch('global', null, 'Global');
     }
 
     public function healthCheck(): bool
@@ -112,7 +112,7 @@ class NewsApiService implements NewsProviderInterface
     /**
      * Executes the fetch with a cascading fallback strategy.
      */
-    protected function executeFetch(string $query, string $countryCode = null): Collection
+    protected function executeFetch(string $query, string $countryCode = null, string $category = 'Unknown'): Collection
     {
         $providers = ['newsdata', 'gnews'];
         $primary = $this->config['provider'] ?? 'newsdata';
@@ -139,7 +139,12 @@ class NewsApiService implements NewsProviderInterface
 
             } catch (\Exception $e) {
                 $msg = $e->getMessage();
-                Log::error("NewsApiService: Provider Failure on [{$provider}] - {$msg}");
+                $statusCode = 'Unknown';
+                if (preg_match('/\((\d{3})\)/', $msg, $matches) || preg_match('/HTTP Error: (\d{3})/', $msg, $matches)) {
+                    $statusCode = $matches[1];
+                }
+                
+                Log::error("NewsApiService: Provider Failure | Provider: [{$provider}] | Category: [{$category}] | Status: [{$statusCode}] | Error: {$msg} | Query: [{$query}]");
                 
                 if (str_contains($msg, 'API Key is missing')) {
                     throw new \Exception("{$provider} API key is not configured. Supply-chain news synchronization cannot use the primary provider. Please configure NEWS_API_KEY in your .env file.");
@@ -194,7 +199,7 @@ class NewsApiService implements NewsProviderInterface
         }
 
         if (!$response->successful()) {
-            throw new \Exception("HTTP Error: " . $response->status());
+            throw new \Exception("HTTP Error: " . $response->status() . " Body: " . $response->body());
         }
 
         $data = $response->json();

@@ -76,34 +76,31 @@ class TradeImpactAnalyzer
     {
         $events = [];
         $mappings = [
-            'Tariff change' => ['tariff', 'duty', 'import tax'],
+            'Tariff change' => ['tariff', 'duty', 'import tax', 'import tariff', 'export tariff'],
             'Export restriction' => ['export ban', 'export control', 'export restriction', 'export limit'],
             'Import restriction' => ['import ban', 'import control', 'import restriction'],
-            'Sanctions affecting trade' => ['sanction'],
-            'Customs action' => ['customs restriction', 'customs delay', 'border closure'],
+            'Trade restriction' => ['trade restriction', 'trade ban', 'customs restriction', 'trade agreement', 'trade sanctions', 'sanction'],
             'Trade policy investigation' => ['trade practice', 'trade investigation', 'trade dispute'],
             
             'Port closure' => ['port closure', 'port shutdown'],
             'Port congestion' => ['port congestion', 'port backlog'],
             
-            'Shipping disruption' => ['shipping disruption', 'vessel reroute', 'route disruption', 'blockade'],
-            'Shipping delay' => ['shipping delay', 'vessel delay'],
+            'Shipping disruption' => ['shipping disruption', 'vessel reroute', 'route disruption', 'blockade', 'shipping delay', 'vessel delay'],
+            'Cargo disruption' => ['cargo disruption', 'maritime disruption', 'vessel disruption'],
             
-            'Freight rate movement' => ['freight rate', 'shipping cost', 'shipping rate'],
+            'Freight rate movement' => ['freight rate', 'shipping cost', 'shipping rate', 'freight disruption', 'freight capacity'],
             'Container shortage' => ['container shortage', 'equipment shortage'],
             'Container rate movement' => ['container rate'],
             
-            'Factory shutdown' => ['factory shutdown', 'production halt', 'plant closure'],
-            'Manufacturing disruption' => ['manufacturing disruption', 'production disruption'],
+            'Factory shutdown' => ['factory shutdown', 'production halt', 'plant closure', 'manufacturing disruption', 'production disruption'],
+            'Technology supply' => ['semiconductor supply', 'chip supply', 'semiconductor shortage', 'chip shortage', 'supply agreement'],
             
-            'Supplier disruption' => ['supplier disruption', 'procurement disruption'],
-            'Supplier shortage' => ['supplier shortage', 'material shortage', 'component shortage'],
+            'Supplier disruption' => ['supplier disruption', 'procurement disruption', 'supplier shortage', 'material shortage', 'component shortage'],
             
-            'Warehouse disruption' => ['warehouse disruption', 'distribution center closure'],
-            'Logistics disruption' => ['logistics disruption', 'transport disruption'],
+            'Logistics disruption' => ['logistics disruption', 'transport disruption', 'supply chain disruption', 'trucking disruption', 'warehouse disruption', 'rail freight disruption'],
             
             'Strike' => ['strike', 'walkout', 'labor dispute'],
-            'Energy disruption' => ['fuel shortage', 'energy disruption', 'power outage']
+            'Energy disruption' => ['fuel shortage', 'energy disruption', 'power outage', 'oil export ban', 'gasoline export ban', 'gas export ban', 'lng supply', 'oil supply disruption', 'refinery disruption']
         ];
 
         foreach ($mappings as $factor => $keywords) {
@@ -111,7 +108,7 @@ class TradeImpactAnalyzer
                 if (preg_match('/\b' . preg_quote($keyword, '/') . '(s|es|d|ed|ing)?\b/i', $text)) {
                     
                     // Contextual check for generic words like tariff
-                    if ($factor === 'Tariff change' && !preg_match('/\b(import(s)?|export(s)?|customs|border(s)?|trade|cross-border)\b/i', $text)) {
+                    if ($factor === 'Tariff change' && !preg_match('/\b(import(s)?|export(s)?|customs|border(s)?|trade|cross-border|tariff(s)?)\b/i', $text)) {
                         continue;
                     }
                     
@@ -133,11 +130,11 @@ class TradeImpactAnalyzer
         foreach ($events as $event) {
             if (in_array($event, ['Port closure', 'Factory shutdown', 'Shipping disruption', 'Strike'])) {
                 $score += 35;
-            } elseif (in_array($event, ['Tariff change', 'Export restriction', 'Import restriction', 'Sanctions affecting trade'])) {
+            } elseif (in_array($event, ['Tariff change', 'Export restriction', 'Import restriction', 'Trade restriction'])) {
                 $score += 30;
-            } elseif (in_array($event, ['Port congestion', 'Supplier disruption', 'Logistics disruption', 'Energy disruption', 'Supplier shortage'])) {
+            } elseif (in_array($event, ['Port congestion', 'Supplier disruption', 'Logistics disruption', 'Energy disruption', 'Technology supply'])) {
                 $score += 25;
-            } elseif (in_array($event, ['Freight rate movement', 'Container rate movement', 'Trade policy investigation'])) {
+            } elseif (in_array($event, ['Freight rate movement', 'Container rate movement', 'Trade policy investigation', 'Cargo disruption'])) {
                 $score += 15;
             } else {
                 $score += 10;

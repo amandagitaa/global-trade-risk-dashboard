@@ -22,7 +22,8 @@ class NewsSyncService
         protected SupplyChainRelevanceFilter $relevanceFilter,
         protected TradeImpactAnalyzer $tradeImpactAnalyzer,
         protected CountryPortImpactMapper $impactMapper,
-        protected TradeIntelligenceSummaryService $summaryService
+        protected TradeIntelligenceSummaryService $summaryService,
+        protected TradeRelevanceFilter $tradeRelevanceFilter
     ) {}
     protected ?\Illuminate\Console\Command $command = null;
 
@@ -195,7 +196,26 @@ class NewsSyncService
                 // Track as unique for this query
                 $queryStats[$apiCategory]['unique']++;
 
-                // 2. Resolvers
+                // 2. Intelligent Trade Relevance Filter
+                $tradeFilterEval = $this->tradeRelevanceFilter->evaluate($article);
+                if (!$this->tradeRelevanceFilter->shouldAccept($tradeFilterEval)) {
+                    $stats['rejected']++;
+                    if ($this->command) {
+                        $this->command->line("Article:\n\"{$title}\"");
+                        $this->command->line('');
+                        $this->command->line("API Query Origin: {$apiCategory}");
+                        $this->command->line("Trade Relevance Score: {$tradeFilterEval['score']}");
+                        $this->command->line("Result: REJECTED (Intelligent Filter)");
+                        foreach ($this->tradeRelevanceFilter->getReasons($tradeFilterEval) as $reason) {
+                            $this->command->line("- {$reason}");
+                        }
+                        $this->command->line("------------------------------------------------------------");
+                        $this->command->line('');
+                    }
+                    continue;
+                }
+
+                // 3. Resolvers
                 $categoryData = $this->categoryResolver->resolve($article);
                 $article['category'] = $categoryData['category'];
 
@@ -263,9 +283,6 @@ class NewsSyncService
                 $countryData = $this->countryResolver->resolve($article);
                 $imageUrl = $this->imageResolver->resolve($article);
                 
-                // Track category distribution
-                $catName = $article['category'];
-                $categoryCounts[$catName] = ($categoryCounts[$catName] ?? 0) + 1;
 
                 // 3. Analysis
                 $sentimentData = $this->sentimentService->analyze($article);
@@ -403,6 +420,10 @@ class NewsSyncService
 
                 $batch[] = $processedData;
 
+                // Track category distribution for saved articles
+                $catName = $processedData['category'];
+                $categoryCounts[$catName] = ($categoryCounts[$catName] ?? 0) + 1;
+
                 if (count($batch) >= $batchSize) {
                     $this->repository->insert($batch);
                     foreach ($batch as $item) {
@@ -477,7 +498,7 @@ class NewsSyncService
             $this->command->line("Saved: {$stats['saved']}");
             $this->command->line('');
             
-            $this->command->info("Category Distribution:");
+            $this->command->info("Category Distribution (Saved):");
             $allowedCategories = [
                 'Business', 'Energy', 'General', 'Geopolitics', 'Logistics', 
                 'Manufacturing', 'Shipping', 'Technology', 'Trade'

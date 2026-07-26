@@ -26,13 +26,19 @@ class DuplicateDetector
     /**
      * Normalizes a title for duplicate comparison.
      */
-    protected function normalizeTitle(string $title): string
+    protected function normalizeTitle(string $title, ?string $source = null): string
     {
         // Lowercase
         $title = mb_strtolower($title);
         
+        // Remove known source suffix if provided
+        if (!empty($source)) {
+            $sourceLower = mb_strtolower($source);
+            $title = preg_replace('/\s*[-|]\s*' . preg_quote($sourceLower, '/') . '\s*$/i', '', $title);
+        }
+        
         // Remove common trailing suffixes (e.g., "- report", "| source")
-        $title = preg_replace('/(\s*[-|]\s*(report|reuters|ap|bloomberg|cnbc|cnn|bbc|update|video|audio|opinion|editorial)).*$/i', '', $title);
+        $title = preg_replace('/(\s*[-|]\s*(report|reuters|ap|bloomberg|cnbc|cnn|bbc|update|video|audio|opinion|editorial|the hill)).*$/i', '', $title);
         
         // Remove harmless punctuation
         $title = preg_replace('/[^\p{L}\p{N}\s]/u', '', $title);
@@ -103,7 +109,8 @@ class DuplicateDetector
         $reason = '';
         $isCrossQuery = false;
 
-        $normalizedTitle = !empty($title) ? $this->normalizeTitle($title) : null;
+        $sourceStr = $articleData['source'] ?? $provider;
+        $normalizedTitle = !empty($title) ? $this->normalizeTitle($title, $sourceStr) : null;
         $normalizedUrl = !empty($url) ? $this->normalizeUrl($url) : null;
 
         // 1. Check Runtime Cache (Current Run)

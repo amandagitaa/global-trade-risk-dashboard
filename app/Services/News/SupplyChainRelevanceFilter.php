@@ -46,6 +46,49 @@ class SupplyChainRelevanceFilter
         'trade tariffs' => 5,
         'shipping disruption' => 5,
         'supply disruption' => 5,
+        
+        // High-confidence operational signals
+        'tariff' => 5,
+        'tariffs' => 5,
+        'import tariff' => 5,
+        'export tariff' => 5,
+        'trade restriction' => 5,
+        'import restriction' => 5,
+        'export control' => 5,
+        'export ban' => 5,
+        'import ban' => 5,
+        'trade ban' => 5,
+        'customs restriction' => 5,
+        'trade agreement' => 5,
+        'port closure' => 5,
+        'shipping delay' => 5,
+        'container shortage' => 5,
+        'freight disruption' => 5,
+        'cargo disruption' => 5,
+        'maritime disruption' => 5,
+        'vessel disruption' => 5,
+        'supply chain disruption' => 5,
+        'logistics disruption' => 5,
+        'trucking disruption' => 5,
+        'freight capacity' => 5,
+        'warehouse disruption' => 5,
+        'rail freight disruption' => 5,
+        'semiconductor supply' => 5,
+        'chip supply' => 5,
+        'semiconductor shortage' => 5,
+        'chip shortage' => 5,
+        'manufacturing disruption' => 5,
+        'production disruption' => 5,
+        'factory shutdown' => 5,
+        'production halt' => 5,
+        'supply agreement' => 5,
+        'oil export ban' => 5,
+        'gasoline export ban' => 5,
+        'gas export ban' => 5,
+        'lng supply' => 5,
+        'energy supply disruption' => 5,
+        'oil supply disruption' => 5,
+        'refinery disruption' => 5,
     ];
 
     /**
@@ -124,6 +167,10 @@ class SupplyChainRelevanceFilter
             'buy now', 'product launch', 'supplier offers', 'wholesale ready', 'oem odm',
             'manufacturer offers', 'distributor opportunity', 'contact us',
             'market report', 'industry report', 'forecast report', 'global market'
+        ],
+        'FINANCE_EARNINGS_CONTEXT' => [
+            'earnings call', 'quarterly earnings', 'investor report', 'analyst commentary',
+            'q1 earnings', 'q2 earnings', 'q3 earnings', 'q4 earnings', 'stock rating'
         ]
     ];
 
@@ -137,7 +184,21 @@ class SupplyChainRelevanceFilter
         'supply disruption', 'logistics disruption', 'vessel routing', 'transport costs',
         'energy transportation', 'commercial shipping', 'supply chain', 'trade route',
         'export restrictions', 'import restrictions', 'trade sanctions', 'commercial vessels',
-        'container shipping'
+        'container shipping',
+        
+        // High-confidence operational signals
+        'tariff', 'tariffs', 'import tariff', 'export tariff', 'trade restriction',
+        'export control', 'export ban', 'import ban', 'trade ban', 'customs restriction',
+        'trade agreement', 'port closure', 'port congestion', 'shipping disruption',
+        'shipping delay', 'container shortage', 'freight disruption', 'freight rates',
+        'cargo disruption', 'maritime disruption', 'vessel disruption', 'supply chain disruption',
+        'logistics disruption', 'trucking disruption', 'freight capacity', 'warehouse disruption',
+        'rail freight disruption', 'procurement disruption', 'supplier disruption',
+        'semiconductor supply', 'chip supply', 'semiconductor shortage', 'chip shortage',
+        'manufacturing disruption', 'production disruption', 'factory shutdown',
+        'production halt', 'supply agreement', 'oil export ban', 'gasoline export ban',
+        'gas export ban', 'lng supply', 'energy supply disruption', 'oil supply disruption',
+        'refinery disruption'
     ];
 
     /**
@@ -225,11 +286,11 @@ class SupplyChainRelevanceFilter
         // Operational Trade Signal Validation (especially for Geopolitics/Crime)
         $hasOperationalSignal = $this->hasOperationalTradeSignal($fullText, $detectedOperationalSignals);
 
-        // If there's a geopolitical/crime/security context, require operational trade context to pass it.
-        $hasGeopoliticsOrCrime = false;
+        // If there's a geopolitical/crime/security/finance context, require operational trade context to pass it.
+        $requiresOperationalSignal = false;
         foreach ($detectedConflicts as $conflict) {
-            if (str_starts_with($conflict, 'CRIME_CONTEXT')) {
-                $hasGeopoliticsOrCrime = true;
+            if (str_starts_with($conflict, 'CRIME_CONTEXT') || str_starts_with($conflict, 'FINANCE_EARNINGS_CONTEXT')) {
+                $requiresOperationalSignal = true;
                 break;
             }
         }
@@ -237,17 +298,17 @@ class SupplyChainRelevanceFilter
         $geopoliticsKeywords = ['war', 'conflict', 'geopolitical', 'sanctions', 'attack', 'missile', 'iran', 'russia', 'china'];
         foreach ($geopoliticsKeywords as $gk) {
             if (preg_match('/\b' . preg_quote($gk, '/') . '\b/i', $fullText)) {
-                $hasGeopoliticsOrCrime = true;
+                $requiresOperationalSignal = true;
                 $detectedConflicts[] = 'GEOPOLITICAL_SECURITY:' . $gk;
             }
         }
 
-        if ($hasGeopoliticsOrCrime && !$hasOperationalSignal) {
+        if ($requiresOperationalSignal && !$hasOperationalSignal) {
             return [
                 'score' => 0,
                 'core_score' => 0,
                 'context_score' => 0,
-                'reason' => 'Failed Operational Trade Validation for Security/Geopolitical Event',
+                'reason' => 'Failed Operational Trade Validation for Security/Geopolitical/Finance Event',
                 'is_relevant' => false,
                 'detected_phrases' => [],
                 'detected_conflicts' => array_unique($detectedConflicts),
