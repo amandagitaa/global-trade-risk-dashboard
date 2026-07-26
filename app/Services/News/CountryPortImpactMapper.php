@@ -154,13 +154,18 @@ class CountryPortImpactMapper
 
     protected function resolveTradeExposureType(string $category, array $impactFactors, string $contentToSearch): string
     {
+        // Check exact impact factors first
+        if (in_array('Trade agreement', $impactFactors)) return 'Trade Agreement / Market Access';
+        if (in_array('Export restriction', $impactFactors)) return 'Export Restriction';
+        if (in_array('Sanctions', $impactFactors) || in_array('Trade restriction', $impactFactors)) return 'Sanctions / Trade Restriction';
+        if (in_array('Technology supply', $impactFactors)) return 'Technology Supply / Semiconductor';
+        
         $factorStr = strtolower(implode(' ', $impactFactors));
         
-        if (str_contains($factorStr, 'tariff') || str_contains($contentToSearch, 'tariff')) return 'Tariff';
-        if (str_contains($factorStr, 'sanction') || str_contains($contentToSearch, 'sanction')) return 'Sanctions';
+        if (str_contains($factorStr, 'tariff') || (in_array('Tariff change', $impactFactors))) return 'Tariff';
         if (str_contains($factorStr, 'export')) return 'Export';
         if (str_contains($factorStr, 'import')) return 'Import';
-        if (str_contains($factorStr, 'freight') || str_contains($contentToSearch, 'freight rate')) return 'Freight';
+        if (str_contains($factorStr, 'freight') || in_array('Freight rate movement', $impactFactors)) return 'Freight';
         if (str_contains($factorStr, 'congestion') || str_contains($factorStr, 'port')) return 'Port Operations';
         
         return match($category) {

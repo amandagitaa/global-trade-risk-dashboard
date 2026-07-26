@@ -79,7 +79,8 @@ class TradeImpactAnalyzer
             'Tariff change' => ['tariff', 'duty', 'import tax', 'import tariff', 'export tariff'],
             'Export restriction' => ['export ban', 'export control', 'export restriction', 'export limit'],
             'Import restriction' => ['import ban', 'import control', 'import restriction'],
-            'Trade restriction' => ['trade restriction', 'trade ban', 'customs restriction', 'trade agreement', 'trade sanctions', 'sanction'],
+            'Trade restriction' => ['trade restriction', 'trade ban', 'customs restriction', 'trade sanctions', 'sanction', 'retaliatory tariff', 'tariff increase'],
+            'Trade agreement' => ['trade agreement', 'free trade agreement', 'fta', 'trade deal', 'tariff reduction', 'tariff cut', 'lower tariffs', 'zero tariff'],
             'Trade policy investigation' => ['trade practice', 'trade investigation', 'trade dispute'],
             
             'Port closure' => ['port closure', 'port shutdown'],
@@ -170,60 +171,125 @@ class TradeImpactAnalyzer
 
     protected function determineRiskDirection(string $text, array $events): string
     {
-        $decreasingPatterns = [
-            'soften', 'decline', 'fall', 'drop', 'decrease', 'ease', 
-            'lower', 'cool', 'normalize', 'recover', 'resume', 'lifted'
+        // Negation stripping: Remove negated directional phrases so they don't trigger false positives.
+        $negationPatterns = [
+            '/\b(?:tariffs?|sanctions?|export ban|import ban|trade restrictions?)\s+(?:\w+\s+){0,3}(?:will not|won\'t|not)\s+(?:\w+\s+){0,3}(?:increase(d|s)?|reduce(d|s)?|ease(d|s)?|lift(ed|s)?|impose(d|s)?)\b/i',
+            '/\b(?:no|not|will not|won\'t)\s+(?:\w+\s+){0,3}(?:tariffs?|sanctions?|export ban|import ban|trade restrictions?|increase(d|s)?|reduce(d|s)?|ease(d|s)?|lift(ed|s)?|impose(d|s)?)\b/i'
+        ];
+        foreach ($negationPatterns as $pattern) {
+            $text = preg_replace($pattern, ' ', $text);
+        }
+
+        $decreasingPhraseScore = 0;
+        $increasingPhraseScore = 0;
+        $decreasingVerbScore = 0;
+        $increasingVerbScore = 0;
+
+        // Level 1: Explicit Directional Phrases (Strongest)
+        $decreasingPhrases = [
+            'trade agreement', 'free trade agreement', 'fta', 'tariff reduction', 'tariff cut', 
+            'tariffs reduced', 'lower tariffs', 'tariff removal', 'tariffs removed', 'zero tariff', 
+            'zero-tariff', 'zero duty', 'zero-duty', 'duty free', 'duty-free', 'market access', 
+            'trade facilitation', 'customs simplification', 'export restrictions lifted', 
+            'export ban lifted', 'lifts export ban', 'export ban removed', 'remove export ban', 'removes export ban',
+            'export ban ended', 'ends export ban', 'end export ban', 'sanctions lifted', 'lifts sanctions', 'lift sanctions',
+            'trade restrictions eased', 'restrictions eased', 'trade barriers reduced', 
+            'trade deal signed', 'trade deal approved', 'trade deal enters into force'
         ];
         
-        $increasingPatterns = [
-            'rise', 'increase', 'surge', 'jump', 'spike', 'soar', 
-            'higher', 'escalate', 'worsen', 'impose', 'new', 'launch'
+        $increasingPhrases = [
+            'tariff increase', 'higher tariffs', 'tariffs increased', 'new tariffs', 'new tariff',
+            'tariff hike', 'tariff imposed', 'tariffs imposed', 'additional tariff', 'retaliatory tariff',
+            'trade war', 'trade conflict', 'trade tension', 'export control', 
+            'embargo', 'customs restriction', 'border closure', 
+            'port closure', 'shipping disruption', 'supply disruption', 'factory shutdown', 
+            'production halt', 'freight disruption', 'port congestion', 'container shortage',
+            'export ban imposed', 'imposes export ban', 'new export ban', 'introduces export ban',
+            'announces export ban', 'extends export ban', 'export ban extended', 'tightens export restrictions',
+            'expands export ban', 'import ban imposed', 'imposes import ban', 'new import ban',
+            'new sanctions', 'sanctions imposed', 'imposes sanctions', 'sanctions extended',
+            'trade restrictions tightened', 'new trade restrictions'
         ];
 
-        $isDecreasing = false;
-        $isIncreasing = false;
-
-        foreach ($decreasingPatterns as $word) {
-            if (preg_match('/\b' . preg_quote($word, '/') . '(s|es|d|ed|ing)?\b/i', $text)) {
-                $isDecreasing = true;
-                break;
+        foreach ($decreasingPhrases as $phrase) {
+            if (preg_match('/\b' . preg_quote($phrase, '/') . '(s)?\b/i', $text)) {
+                $decreasingPhraseScore += 2;
+            }
+        }
+        foreach ($increasingPhrases as $phrase) {
+            if (preg_match('/\b' . preg_quote($phrase, '/') . '(s)?\b/i', $text)) {
+                $increasingPhraseScore += 2;
             }
         }
 
-        foreach ($increasingPatterns as $word) {
-            if (preg_match('/\b' . preg_quote($word, '/') . '(s|es|d|ed|ing)?\b/i', $text)) {
-                $isIncreasing = true;
-                break;
+        $increasingPatterns = [
+            '/\b(?:impose[ds]?|new|introduce[ds]?|announce[ds]?|extend(?:s|ed)?|tighten(?:s|ed)?|expand(?:s|ed)?)\s+(?:\w+\s+){0,5}(?:export bans?|import bans?|export restrictions?|import restrictions?|trade restrictions?|sanctions?|tariffs?|restrictions?)\b/i',
+            '/\b(?:export bans?|import bans?|export restrictions?|import restrictions?|trade restrictions?|sanctions?|tariffs?|restrictions?)\s+(?:\w+\s+){0,5}(?:imposed|extended|tightened|expanded|announced|introduced)\b/i'
+        ];
+
+        $decreasingPatterns = [
+            '/\b(?:lift(?:s|ed)?|remove[ds]?|end(?:s|ed)?|ease[ds]?|reduce[ds]?)\s+(?:\w+\s+){0,5}(?:export bans?|import bans?|export restrictions?|import restrictions?|trade restrictions?|sanctions?|tariffs?|restrictions?)\b/i',
+            '/\b(?:export bans?|import bans?|export restrictions?|import restrictions?|trade restrictions?|sanctions?|tariffs?|restrictions?)\s+(?:\w+\s+){0,5}(?:lifted|removed|ended|eased|reduced)\b/i'
+        ];
+
+        foreach ($decreasingPatterns as $pattern) {
+            if (preg_match($pattern, $text)) {
+                $decreasingPhraseScore += 2;
+            }
+        }
+        foreach ($increasingPatterns as $pattern) {
+            if (preg_match($pattern, $text)) {
+                $increasingPhraseScore += 2;
             }
         }
 
-        // Contextual overrides
-        if (in_array('Tariff change', $events) && preg_match('/\b(impose|new|raise|hike)(s|es|d|ed|ing)?\b/i', $text)) {
+        // Level 2: Verbs / Patterns (Weaker)
+        $decreasingVerbs = [
+            'soften', 'decline', 'fall', 'drop', 'decrease', 'ease', 
+            'lower', 'cool', 'normalize', 'recover', 'resume', 'lift', 'remove', 'cancel', 'clear', 'improve'
+        ];
+        $increasingVerbs = [
+            'rise', 'increase', 'surge', 'jump', 'spike', 'soar', 
+            'higher', 'escalate', 'worsen', 'impose', 'new', 'launch', 'build', 'grow', 'extend', 'tighten', 'expand'
+        ];
+
+        foreach ($decreasingVerbs as $verb) {
+            if (preg_match('/\b' . preg_quote($verb, '/') . '(s|es|d|ed|ing)?\b/i', $text)) {
+                $decreasingVerbScore += 1;
+            }
+        }
+        foreach ($increasingVerbs as $verb) {
+            if (preg_match('/\b' . preg_quote($verb, '/') . '(s|es|d|ed|ing)?\b/i', $text)) {
+                $increasingVerbScore += 1;
+            }
+        }
+
+        // Tiered resolution
+        if ($decreasingPhraseScore > $increasingPhraseScore) {
+            return 'Decreasing';
+        } elseif ($increasingPhraseScore > $decreasingPhraseScore) {
+            return 'Increasing';
+        } elseif ($decreasingPhraseScore > 0 && $decreasingPhraseScore == $increasingPhraseScore) {
+            return 'Stable'; // Explicit events are genuinely conflicting, ignore generic verbs
+        }
+        
+        // Contextual Fallbacks (if no strong phrase overrides)
+        if ($decreasingPhraseScore == 0 && $increasingPhraseScore == 0) {
+            $negativeEvents = ['Port closure', 'Strike', 'Blockade', 'Shipping disruption', 'Factory shutdown', 'Supplier shortage'];
+            foreach ($negativeEvents as $ne) {
+                if (in_array($ne, $events)) {
+                    $increasingVerbScore += 1;
+                    break;
+                }
+            }
+        }
+        
+        if ($decreasingVerbScore > $increasingVerbScore) {
+            return 'Decreasing';
+        } elseif ($increasingVerbScore > $decreasingVerbScore) {
             return 'Increasing';
         }
         
-        if (in_array('Freight rate movement', $events) || in_array('Container rate movement', $events)) {
-            if (preg_match('/\b(soften|decline|fall|drop|decrease|lower|cool)\b/i', $text)) return 'Decreasing';
-            if (preg_match('/\b(surge|jump|spike|soar|higher|increase|rise)\b/i', $text)) return 'Increasing';
-        }
-
-        if (in_array('Port congestion', $events)) {
-            if (preg_match('/\b(ease|clear|improve|recover)\b/i', $text)) return 'Decreasing';
-            if (preg_match('/\b(worsen|build|grow|severe)\b/i', $text)) return 'Increasing';
-        }
-
-        // If it's a negative disruption, default to increasing risk
-        $negativeEvents = ['Port closure', 'Strike', 'Blockade', 'Shipping disruption', 'Factory shutdown', 'Supplier shortage'];
-        foreach ($negativeEvents as $ne) {
-            if (in_array($ne, $events)) {
-                return 'Increasing';
-            }
-        }
-
-        if ($isDecreasing && !$isIncreasing) return 'Decreasing';
-        if ($isIncreasing && !$isDecreasing) return 'Increasing';
-        if ($isDecreasing && $isIncreasing) return 'Mixed';
-
         return 'Stable';
     }
 
@@ -328,7 +394,15 @@ class TradeImpactAnalyzer
         $factorStr = strtolower($factors[0]);
 
         if (in_array('Tariff change', $factors)) {
-            return "A new tariff may increase cross-border trade costs and place pricing pressure on affected importers and exporters.";
+            if ($direction === 'Decreasing') {
+                return "A tariff reduction or removal may ease cross-border trade costs and improve market access.";
+            } else {
+                return "A new or increased tariff may raise cross-border trade costs and place pricing pressure on affected importers and exporters.";
+            }
+        }
+        
+        if (in_array('Trade agreement', $factors)) {
+            return "The trade agreement may reduce cross-border trade barriers and improve market access between the affected economies.";
         }
         
         if (in_array('Freight rate movement', $factors)) {
@@ -340,7 +414,11 @@ class TradeImpactAnalyzer
         }
         
         if (in_array('Port congestion', $factors)) {
-            return "Port congestion may increase vessel waiting times and delay container movement.";
+            if ($direction === 'Decreasing') {
+                return "An easing of port congestion may improve vessel waiting times and accelerate container movement.";
+            } else {
+                return "Port congestion may increase vessel waiting times and delay container movement.";
+            }
         }
 
         if (in_array('Factory shutdown', $factors)) {

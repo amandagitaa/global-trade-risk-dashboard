@@ -85,14 +85,16 @@ class TradeIntelligenceSummaryService
                 return "This development may increase pressure and create {$strengthWord} uncertainty for trade operations.";
             }
         } elseif ($riskDirection === 'Decreasing') {
-            if ($category === 'Shipping' || $category === 'Logistics') {
-                return "The decline may reduce transportation costs and ease pressure on shipping operations.";
+            if ($category === 'Trade') {
+                return "The measure may reduce cross-border trade barriers and improve market access between the affected economies.";
+            } elseif ($category === 'Shipping' || $category === 'Logistics') {
+                return "The development may reduce transportation costs and ease pressure on shipping operations.";
             } else {
                 return "This development may ease pressure and improve {$strengthWord} supply-chain conditions.";
             }
         } else {
             // Stable
-            return "The operational impact is expected to remain {$strengthWord} but stable.";
+            return "The development may affect trade conditions, although the direction of operational risk remains uncertain.";
         }
     }
 
