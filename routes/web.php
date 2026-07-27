@@ -86,37 +86,37 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/trade-planner/view', [ReportExportController::class, 'tradePlannerView'])->name('trade-planner.view');
     Route::get('reports/trade-planner/export/pdf', [ReportExportController::class, 'tradePlannerPdf'])->name('trade-planner.pdf');
     Route::get('reports/trade-planner/export/excel', [ReportExportController::class, 'tradePlannerExcel'])->name('trade-planner.excel');
-    Route::get('risk-analysis/view', [ReportExportController::class, 'riskAnalysisView'])->name('risk-analysis.view');
-    Route::get('risk-analysis/pdf', [ReportExportController::class, 'riskAnalysisPdf'])->name('risk-analysis.pdf');
-    Route::get('risk-analysis/excel', [ReportExportController::class, 'riskAnalysisExcel'])->name('risk-analysis.excel');
+    Route::get('reports/risk-analysis/view', [ReportExportController::class, 'riskAnalysisView'])->name('risk-analysis.view');
+    Route::get('reports/risk-analysis/pdf', [ReportExportController::class, 'riskAnalysisPdf'])->name('risk-analysis.pdf');
+    Route::get('reports/risk-analysis/excel', [ReportExportController::class, 'riskAnalysisExcel'])->name('risk-analysis.excel');
 
-    Route::get('countries/view', [ReportExportController::class, 'countriesView'])->name('countries.view');
-    Route::get('countries/pdf', [ReportExportController::class, 'countriesPdf'])->name('countries.pdf');
-    Route::get('countries/excel', [ReportExportController::class, 'countriesExcel'])->name('countries.excel');
+    Route::get('reports/countries/view', [ReportExportController::class, 'countriesView'])->name('countries.view');
+    Route::get('reports/countries/pdf', [ReportExportController::class, 'countriesPdf'])->name('countries.pdf');
+    Route::get('reports/countries/excel', [ReportExportController::class, 'countriesExcel'])->name('countries.excel');
 
-    Route::get('weather/view', [ReportExportController::class, 'weatherView'])->name('weather.view');
-    Route::get('weather/pdf', [ReportExportController::class, 'weatherPdf'])->name('weather.pdf');
-    Route::get('weather/excel', [ReportExportController::class, 'weatherExcel'])->name('weather.excel');
+    Route::get('reports/weather/view', [ReportExportController::class, 'weatherView'])->name('weather.view');
+    Route::get('reports/weather/pdf', [ReportExportController::class, 'weatherPdf'])->name('weather.pdf');
+    Route::get('reports/weather/excel', [ReportExportController::class, 'weatherExcel'])->name('weather.excel');
 
-    Route::get('currency/view', [ReportExportController::class, 'currencyView'])->name('currency.view');
-    Route::get('currency/pdf', [ReportExportController::class, 'currencyPdf'])->name('currency.pdf');
-    Route::get('currency/excel', [ReportExportController::class, 'currencyExcel'])->name('currency.excel');
+    Route::get('reports/currency/view', [ReportExportController::class, 'currencyView'])->name('currency.view');
+    Route::get('reports/currency/pdf', [ReportExportController::class, 'currencyPdf'])->name('currency.pdf');
+    Route::get('reports/currency/excel', [ReportExportController::class, 'currencyExcel'])->name('currency.excel');
 
-    Route::get('economy/view', [ReportExportController::class, 'economyView'])->name('economy.view');
-    Route::get('economy/pdf', [ReportExportController::class, 'economyPdf'])->name('economy.pdf');
-    Route::get('economy/excel', [ReportExportController::class, 'economyExcel'])->name('economy.excel');
+    Route::get('reports/economy/view', [ReportExportController::class, 'economyView'])->name('economy.view');
+    Route::get('reports/economy/pdf', [ReportExportController::class, 'economyPdf'])->name('economy.pdf');
+    Route::get('reports/economy/excel', [ReportExportController::class, 'economyExcel'])->name('economy.excel');
 
-    Route::get('news/view', [ReportExportController::class, 'newsView'])->name('news.view');
-    Route::get('news/pdf', [ReportExportController::class, 'newsPdf'])->name('news.pdf');
-    Route::get('news/excel', [ReportExportController::class, 'newsExcel'])->name('news.excel');
+    Route::get('reports/news/view', [ReportExportController::class, 'newsView'])->name('news.view');
+    Route::get('reports/news/pdf', [ReportExportController::class, 'newsPdf'])->name('news.pdf');
+    Route::get('reports/news/excel', [ReportExportController::class, 'newsExcel'])->name('news.excel');
 
-    Route::get('ports/view', [ReportExportController::class, 'portsView'])->name('ports.view');
-    Route::get('ports/pdf', [ReportExportController::class, 'portsPdf'])->name('ports.pdf');
-    Route::get('ports/excel', [ReportExportController::class, 'portsExcel'])->name('ports.excel');
+    Route::get('reports/ports/view', [ReportExportController::class, 'portsView'])->name('ports.view');
+    Route::get('reports/ports/pdf', [ReportExportController::class, 'portsPdf'])->name('ports.pdf');
+    Route::get('reports/ports/excel', [ReportExportController::class, 'portsExcel'])->name('ports.excel');
 
-    Route::get('watch-list/view', [ReportExportController::class, 'watchListView'])->name('watch-list.view');
-    Route::get('watch-list/pdf', [ReportExportController::class, 'watchListPdf'])->name('watch-list.pdf');
-    Route::get('watch-list/excel', [ReportExportController::class, 'watchListExcel'])->name('watch-list.excel');
+    Route::get('reports/watch-list/view', [ReportExportController::class, 'watchListView'])->name('watch-list.view');
+    Route::get('reports/watch-list/pdf', [ReportExportController::class, 'watchListPdf'])->name('watch-list.pdf');
+    Route::get('reports/watch-list/excel', [ReportExportController::class, 'watchListExcel'])->name('watch-list.excel');
 
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
     Route::post('/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
