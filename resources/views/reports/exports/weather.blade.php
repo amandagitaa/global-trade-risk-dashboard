@@ -23,7 +23,7 @@
                 <tr>
                     <th>Country</th>
                     <th>Temperature</th>
-                    <th>Humidity</th>
+                    <th>Rainfall</th>
                     <th>Wind Speed</th>
                     <th>Weather Status</th>
                     <th>Storm Risk</th>
@@ -35,7 +35,7 @@
                     <tr>
                         <td>{{ $row['country'] ?? '-' }}</td>
                         <td>{{ $row['temperature'] ?? '-' }}</td>
-                        <td>{{ $row['humidity'] ?? '-' }}</td>
+                        <td>{{ $row['rainfall'] ?? '-' }}</td>
                         <td>{{ $row['wind_speed'] ?? '-' }}</td>
                         <td>{{ $row['weather_status'] ?? '-' }}</td>
                         <td>

@@ -289,17 +289,17 @@ class ReportExportController extends Controller
         $countries = $query->get();
         $data = [];
         foreach($countries as $c) {
-            $eco = $c->economicData->first();
+            $eco = $c->economicData;
             $data[] = [
                 'country' => $c->country_name,
                 'capital' => $c->capital ?? 'N/A',
                 'region' => $c->region,
                 'currency' => $c->currency_code,
                 'population' => number_format($c->population),
-                'gdp' => $eco ? '$' . number_format($eco->gdp_value) : 'N/A',
-                'inflation' => $eco ? $eco->inflation_rate . '%' : 'N/A',
-                'export_value' => $eco ? '$' . number_format($eco->export_value) : 'N/A',
-                'import_value' => $eco ? '$' . number_format($eco->import_value) : 'N/A'
+                'gdp' => $eco ? '$' . number_format($eco->gdp) : 'N/A',
+                'inflation' => $eco ? $eco->inflation . '%' : 'N/A',
+                'export_value' => $eco ? '$' . number_format($eco->exports) : 'N/A',
+                'import_value' => $eco ? '$' . number_format($eco->imports) : 'N/A'
             ];
         }
         return $data;
@@ -332,11 +332,11 @@ class ReportExportController extends Controller
         foreach($weathers as $w) {
             $data[] = [
                 'country' => $w->country->country_name ?? 'N/A',
-                'temperature' => $w->temperature_celsius . '°C',
-                'humidity' => $w->humidity_percent . '%',
-                'wind_speed' => $w->wind_speed_kmh . ' km/h',
-                'weather_status' => $w->weather_condition,
-                'storm_risk' => $w->is_storm_warning ? 'High' : 'Low',
+                'temperature' => $w->temperature !== null ? $w->temperature . '°C' : 'N/A',
+                'rainfall' => $w->rainfall !== null ? number_format($w->rainfall, 1) . ' mm' : 'N/A',
+                'wind_speed' => $w->wind_speed !== null ? $w->wind_speed . ' km/h' : 'N/A',
+                'weather_status' => $w->weather_status !== null ? ucfirst($w->weather_status) : 'N/A',
+                'storm_risk' => $w->storm_risk === null ? 'N/A' : ($w->storm_risk <= 25 ? 'Low' : ($w->storm_risk <= 50 ? 'Medium' : ($w->storm_risk <= 75 ? 'High' : 'Extreme'))),
                 'updated_at' => $w->updated_at->format('Y-m-d H:i')
             ];
         }
@@ -370,11 +370,11 @@ class ReportExportController extends Controller
         foreach($currencies as $c) {
             $data[] = [
                 'country' => $c->country->country_name ?? 'N/A',
-                'currency' => $c->currency_code,
-                'exchange_rate' => $c->exchange_rate_to_usd,
-                'change_pct' => $c->trend_percentage,
-                'status' => $c->trend_percentage < -2 ? 'Volatile' : ($c->trend_percentage > 2 ? 'Warning' : 'Stable'),
-                'updated_at' => $c->updated_at->format('Y-m-d H:i')
+                'currency' => $c->target_currency !== null ? $c->target_currency : 'N/A',
+                'exchange_rate' => $c->exchange_rate !== null ? $c->exchange_rate : 'N/A',
+                'change_pct' => $c->change_percentage !== null ? $c->change_percentage . '%' : 'N/A',
+                'status' => $c->change_percentage === null ? 'N/A' : ($c->change_percentage < -2 ? 'Volatile' : ($c->change_percentage > 2 ? 'Warning' : 'Stable')),
+                'updated_at' => $c->updated_at ? $c->updated_at->format('Y-m-d H:i') : 'N/A'
             ];
         }
         return $data;
@@ -407,12 +407,12 @@ class ReportExportController extends Controller
         foreach($economies as $e) {
             $data[] = [
                 'country' => $e->country->country_name ?? 'N/A',
-                'gdp' => '$' . number_format($e->gdp_value),
-                'inflation' => $e->inflation_rate . '%',
-                'unemployment' => $e->unemployment_rate . '%',
-                'export' => '$' . number_format($e->export_value),
-                'import' => '$' . number_format($e->import_value),
-                'economic_status' => $e->inflation_rate > 10 ? 'Crisis' : ($e->inflation_rate > 5 ? 'Warning' : 'Stable')
+                'gdp' => $e->gdp !== null ? '$' . number_format($e->gdp) : 'N/A',
+                'inflation' => $e->inflation !== null ? $e->inflation . '%' : 'N/A',
+                'unemployment' => 'N/A',
+                'export' => $e->exports !== null ? '$' . number_format($e->exports) : 'N/A',
+                'import' => $e->imports !== null ? '$' . number_format($e->imports) : 'N/A',
+                'economic_status' => $e->inflation === null ? 'N/A' : ($e->inflation > 10 ? 'Crisis' : ($e->inflation > 5 ? 'Warning' : 'Stable'))
             ];
         }
         return $data;
@@ -444,13 +444,13 @@ class ReportExportController extends Controller
         $data = [];
         foreach($ports as $p) {
             $data[] = [
-                'port_name' => $p->port_name,
-                'country' => $p->country->country_name ?? 'N/A',
-                'capacity' => number_format($p->capacity_teu) . ' TEU',
-                'active_ships' => $p->active_ships,
-                'congestion' => $p->congestion_level,
-                'operational_status' => $p->operational_status,
-                'risk' => $p->congestion_level == 'High' ? 'High' : 'Low'
+                'port_name' => $p->name !== null ? $p->name : 'N/A',
+                'country' => $p->country->country_name ?? $p->country_name ?? 'N/A',
+                'capacity' => $p->teu_capacity !== null ? number_format($p->teu_capacity) . ' TEU' : 'N/A',
+                'active_ships' => $p->shipping_routes !== null ? $p->shipping_routes : 'N/A',
+                'congestion' => $p->traffic_level !== null ? $p->traffic_level : 'N/A',
+                'operational_status' => $p->status !== null ? $p->status : 'N/A',
+                'risk' => $p->risk_level !== null ? $p->risk_level : 'N/A'
             ];
         }
         return $data;
