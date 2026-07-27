@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/news/sync', [NewsController::class, 'sync'])->name('news.sync');
     Route::get('/news/{news}', [NewsController::class, 'show'])->name('news.show');
     Route::post('/news/sync/{country}', [NewsController::class, 'syncCountry'])->name('news.sync.country');
+    
+    // Official Articles Detail
+    Route::get('/articles/{article}', [NewsController::class, 'showArticle'])->name('articles.show');
 
     Route::get('/ports', [PortController::class, 'index'])->name('ports.index');
     Route::get('/ports/{port}', [PortController::class, 'show'])->name('ports.show');

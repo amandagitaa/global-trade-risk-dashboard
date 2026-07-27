@@ -55,6 +55,8 @@ class NewsController extends Controller
             $query->where('trade_exposure_type', $request->trade_exposure_type);
         }
 
+        $officialArticles = \App\Models\Article::latest('created_at')->get();
+
         $news = $query->latest('published_at')->paginate(9)->withQueryString();
 
         $ttl = config('news.cache_ttl', 3600);
@@ -104,7 +106,7 @@ class NewsController extends Controller
         extract($stats);
 
         return view('news.index', compact(
-            'news', 'countries', 'categories', 'sources', 'totalNews', 
+            'news', 'officialArticles', 'countries', 'categories', 'sources', 'totalNews', 
             'highImpactCount', 'increasingRiskCount', 'affectedCountriesCount', 
             'latestUpdate'
         ));
@@ -122,6 +124,17 @@ class NewsController extends Controller
             ->get();
 
         return view('news.show', compact('news', 'relatedNews'));
+    }
+
+    /**
+     * Detail Official Article
+     */
+    public function showArticle(\App\Models\Article $article)
+    {
+        // Global scope on Article model ensures only 'Published' articles are retrieved.
+        // Route model binding will automatically throw 404 if a 'Draft' or 'Archived' article ID is requested.
+        
+        return view('news.article_show', compact('article'));
     }
 
     /**

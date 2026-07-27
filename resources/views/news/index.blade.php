@@ -156,6 +156,39 @@
     </div>
 </div>
 
+@if($officialArticles->count() > 0)
+<div class="mb-5">
+    <h4 class="fw-bold mb-4 border-bottom pb-2"><i class="bi bi-file-earmark-text text-primary me-2"></i>Official Articles</h4>
+    <div class="row g-4">
+        @foreach($officialArticles as $article)
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-primary border-top border-3">
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge bg-primary">{{ $article->category }}</span>
+                        </div>
+                        <h5 class="fw-bold mb-2">{{ $article->title }}</h5>
+                        <div class="text-muted small mb-3">
+                            <i class="bi bi-person-fill"></i> {{ $article->author }} &bull; 
+                            <i class="bi bi-clock"></i> {{ $article->created_at ? $article->created_at->format('d M Y') : 'Unknown Date' }}
+                        </div>
+                        <p class="small text-muted mb-4">
+                            {{ Str::limit(strip_tags($article->content), 120) }}
+                        </p>
+                        <div class="mt-auto">
+                            <a href="{{ route('articles.show', $article->id) }}" class="btn btn-outline-primary btn-sm w-100">
+                                Read Article <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
+
 {{-- NEWS GRID --}}
 <div class="row g-4">
     @forelse($news as $item)
