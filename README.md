@@ -1,53 +1,54 @@
 # 🌍 Global Trade Risk Intelligence Platform
 
-**Global Trade Risk Intelligence Platform** adalah aplikasi berbasis Laravel yang dirancang khusus untuk membantu perusahaan, eksportir, importir, dan analis perdagangan dalam memonitor risiko perdagangan internasional secara *real-time*.
+**Global Trade Risk Intelligence Platform** adalah aplikasi web berbasis Laravel yang dikembangkan untuk memonitor risiko perdagangan internasional dan rantai pasok (*supply chain*).
 
-Sistem ini secara pintar mengintegrasikan berbagai sumber data global yang vital seperti cuaca, nilai tukar mata uang, indikator ekonomi makro, berita intelijen global, serta informasi logistik pelabuhan untuk menghasilkan wawasan dan informasi pendukung keputusan yang presisi.
+Sistem ini mengumpulkan dan menampilkan berbagai informasi pendukung seperti data negara, cuaca, nilai tukar mata uang, indikator ekonomi, berita perdagangan global, data pelabuhan, dan rute pelayaran. Seluruh data ini disajikan dalam satu sistem terpadu untuk membantu pengguna memantau kondisi terkini yang dapat memengaruhi aktivitas perdagangan internasional.
 
 ---
 
 ## 👥 Fitur User Panel
 
-Antarmuka cerdas yang dirancang untuk pengguna akhir guna menganalisis dan merencanakan strategi logistik:
+Fitur-fitur yang tersedia bagi pengguna untuk memantau dan merencanakan aktivitas logistik:
 
-- **Dashboard**: Tinjauan ringkas skor risiko global terkini.
-- **Countries Monitoring**: Pemantauan detail risiko per negara.
-- **Country Detail**: Rincian profil ekonomi dan kondisi cuaca negara.
-- **Country Comparison**: Pembandingan risiko antar negara secara bersebelahan (*side-by-side*).
-- **Weather Monitoring**: Peringatan dini terkait anomali cuaca yang dapat menghambat logistik.
-- **Currency Monitoring**: Visualisasi fluktuasi nilai tukar secara *real-time*.
+- **Dashboard**: Menampilkan ringkasan kondisi perdagangan global, informasi risiko, rekomendasi, cuaca, mata uang, dan metrik penting lainnya.
+- **Countries Monitoring**: Menampilkan daftar negara yang dipantau beserta informasi risikonya saat ini.
+- **Country Detail**: Menampilkan profil detail ekonomi dan kondisi cuaca untuk suatu negara tertentu. 
+- **Country Comparison**: Memungkinkan pengguna untuk membandingkan beberapa negara secara langsung berdasarkan risiko, indikator ekonomi, cuaca, dan data relevan lainnya.
+- **Weather Monitoring**: Informasi terkait kondisi cuaca yang berpotensi menghambat logistik.
+- **Currency Monitoring**: Visualisasi fluktuasi nilai tukar mata uang secara *real-time*.
 - **Economy Monitoring**: Indikator tren ekonomi global.
-- **Global News Intelligence**: Aliran berita perdagangan yang disematkan sistem analisis sentimen AI.
-- **Trade Planner**: Perencana rute dan simulasi pelayaran antar pelabuhan.
-- **Risk Analysis**: Komputasi komprehensif terkait level risiko.
-- **Watch List**: Daftar pantauan instan untuk rute maupun negara favorit.
-- **Reports**: Sistem pelaporan intelijen.
-- **Profile**: Manajemen profil personal.
+- **Global News Intelligence**: Menampilkan berita terkait perdagangan yang dikumpulkan dari sumber eksternal (API) dan diproses menggunakan analisis sentimen serta skor dampak perdagangan. Pada halaman yang sama, terdapat bagian **Official Articles** yang memuat ulasan editorial buatan Admin, sehingga pengguna bisa membedakan antara berita eksternal otomatis dan artikel analisis manual.
+- **Trade Planner**: Memungkinkan pengguna memilih pelabuhan asal dan tujuan untuk melihat informasi rute dan pertimbangan perdagangan terkait.
+- **Risk Analysis**: Menampilkan perhitungan detail mengenai level risiko.
+- **Watch List**: Memungkinkan pengguna untuk menyimpan entitas spesifik (negara, pelabuhan, atau rute) ke dalam daftar pantauan pribadi. 
+  *(Alur penggunaan umum: pengguna dapat menelusuri dari **Countries** ➔ melihat **Country Detail** ➔ membandingkan lewat **Compare** ➔ lalu menambahkannya ke **Watch List**).*
+- **Reports**: Memungkinkan pengguna melihat pratinjau data laporan dan mengekspornya ke format PDF atau Excel.
+- **Profile**: Manajemen profil personal pengguna.
 
 ---
 
 ## 🛡️ Fitur Admin Panel
 
-Sistem manajemen terpusat khusus untuk Administrator dalam mengatur konfigurasi *platform*:
+Sistem manajemen terpusat bagi Admin untuk mengatur data dan konfigurasi aplikasi:
 
-- **Dashboard Monitoring**: Laporan ringkas sistem (*System Health*).
-- **User Management** (CRUD User): Pengaturan hak akses (*Role*) dan status keanggotaan pengguna.
-- **Countries Management** (CRUD Countries): Pengelolaan data pokok negara yang direferensikan pada sistem.
-- **Ports Management** (CRUD Ports): Registri pusat master data pelabuhan dunia.
-- **News Management** (News Cache): Moderasi aliran tangkapan berita yang di- *cache* sebelum dirilis ke audiens.
-- **Articles Management**: Modul khusus penulisan manual ulasan dan artikel analisis dari pakar/Admin.
-- **Risk Configuration**: Sistem pengaturan dan rekalibrasi bobot pembentuk algoritma *Risk Score*.
-- **Sentiment Dictionary**: Modifikasi kamus cerdas (*Lexicon Dictionary*) pengklasifikasi sentimen kata berita (Positif/Negatif).
-- **General Settings**: Pengaturan umum, zona waktu, dan identitas *platform*.
-- **Notification Settings**: Pemantik pengingat (*Alert*) notifikasi sistem.
-- **Profile Management**: Konfigurasi identitas Administrator.
-- **Change Password**: Modul pengubahan kata sandi akun keamanan yang di- *hash*.
+- **Dashboard Monitoring**: Menampilkan laporan ringkas kondisi sistem.
+- **User Management**: Mengatur akun pengguna, hak akses, dan status keanggotaan.
+- **Countries Management**: Mengelola data dasar negara yang digunakan dalam aplikasi.
+- **Ports Management**: Mengelola master data pelabuhan dunia.
+- **News Management**: Mengelola berita yang ditarik secara otomatis dari sumber eksternal sebelum ditampilkan ke pengguna. Modul ini berbeda dengan Articles Management karena bersumber dari integrasi API.
+- **Articles Management**: Memungkinkan Admin untuk menulis artikel editorial atau analisis manual. Artikel memiliki status seperti Draft atau Published. Artikel berstatus Published akan tampil secara publik kepada pengguna di menu News (bagian Official Articles), di mana pengguna dapat membaca isi artikel selengkapnya.
+- **Risk Configuration**: Mengatur dan menyesuaikan bobot dari masing-masing indikator pembentuk skor risiko.
+- **Sentiment Dictionary**: Mengelola daftar kata (kamus) untuk menentukan sentimen kata berita (Positif/Negatif).
+- **General Settings**: Pengaturan umum, zona waktu, dan identitas aplikasi.
+- **Notification Settings**: Pengaturan pemberitahuan sistem.
+- **Profile Management**: Mengatur profil akun Admin.
+- **Change Password**: Mengubah kata sandi akun keamanan.
 
 ---
 
 ## 💻 Teknologi yang Digunakan
 
-Proyek ini dibangun di atas fondasi teknologi mutakhir:
+Aplikasi ini dikembangkan menggunakan beberapa teknologi dan layanan berikut:
 
 - **Laravel** (Backend Framework)
 - **PHP** (Core Language)
@@ -55,102 +56,107 @@ Proyek ini dibangun di atas fondasi teknologi mutakhir:
 - **Bootstrap 5** (Frontend UI Framework)
 - **Leaflet.js** (Interactive Mapping)
 - **Chart.js** (Data Visualization)
-- **REST Countries API** (Data Geografis Negara)
-- **Open-Meteo API** (Data Iklim & Cuaca Aktual)
-- **World Bank API** (Indikator Ekonomi Mikro/Makro)
-- **GNews API** (Arus Berita Global Aktual)
+- **REST Countries API** — penyedia data dasar negara.
+- **Open-Meteo API** — penyedia data cuaca aktual.
+- **World Bank API** — penyedia indikator ekonomi.
+- **GNews API** — sumber berita global terkini.
+- **DomPDF** (Ekspor PDF)
+- **Laravel Excel (Maatwebsite)** (Ekspor Excel)
 
 ---
 
 ## 🧮 Algoritma Perhitungan Risiko
 
-**Risk Score** merupakan nilai kalkulasi dinamis yang dihitung dari peleburan data terpadu berikut:
+**Risk Score** merupakan nilai gabungan yang dihitung dari beberapa indikator berikut untuk membantu pengguna mengidentifikasi risiko perdagangan relatif. Ini ditujukan sebagai informasi pendukung keputusan, bukan prediksi yang mutlak:
 
-1. **Weather Risk**: Variabel risiko cuaca di titik pelabuhan dan rute transit.
-2. **Inflation Risk**: Laju inflasi negara asal/tujuan.
-3. **Currency Risk**: Variabilitas nilai tukar mata uang lokal terhadap standar deviasi global.
-4. **News Sentiment**: Indeks sentimen (*Positive/Negative*) yang diekstrak dari analisis berita terkini.
+1. **Weather Risk**: Memperhitungkan data cuaca buruk di titik pelabuhan dan rute transit yang relevan.
+2. **Inflation Risk**: Mengukur risiko berdasarkan laju inflasi negara asal atau tujuan.
+3. **Currency Risk**: Menghitung fluktuasi nilai tukar mata uang lokal terhadap standar deviasi global.
+4. **News Sentiment**: Menggunakan indeks sentimen (positif atau negatif) dari berita terkini yang dikumpulkan.
+5. **Trade Impact Score**: Memperkirakan dampak berita yang spesifik terhadap suplai, permintaan, dan operasional rantai pasok.
 
-> 💡 **Catatan**: Bobot dari masing-masing indikator dapat dimodifikasi dan dikalibrasi ulang sewaktu-waktu melalui menu **Risk Configuration** pada panel Admin.
+> 💡 **Catatan**: Admin dapat menyesuaikan bobot dari masing-masing indikator ini melalui menu **Risk Configuration** agar skor risiko tetap relevan.
 
 ---
 
 ## 🚀 Instalasi & Konfigurasi
 
-Ikuti panduan berikut untuk memasang platform ini di dalam server lokal Anda.
+Ikuti panduan berikut untuk memasang aplikasi ini di *local server* Anda.
 
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/amandagitaa/global-trade-risk-dashboard.git
 ```
-*(Ganti URL di atas apabila URL repositori berubah)*
 
-### 2. Unduh Dependensi Composer
+### 2. Install Dependency
 ```bash
 composer install
 ```
 
-### 3. Konfigurasi Lingkungan (*Environment*)
-Gandakan fail konfigurasi lingkungan dan sesuaikan parameter pangkalan data Anda di dalamnya.
+### 3. Konfigurasi File .env
+Gandakan file konfigurasi lingkungan dan sesuaikan koneksi database Anda di dalamnya.
 ```bash
 cp .env.example .env
 ```
-Lalu, bangkitkan kunci aplikasi:
+Buka file `.env` dan pastikan konfigurasi koneksi database Anda sudah benar. Selain itu, fitur API eksternal (seperti pengambilan berita) memerlukan API Key yang valid, maka lengkapi kredensial tersebut:
+```env
+NEWS_API_KEY=your_api_key_here
+```
+Setelah itu, generate application key:
 ```bash
 php artisan key:generate
 ```
 
-### 4. Eksekusi Database (Migrasi & Seeder)
-Pastikan Anda telah membuat pangkalan data MySQL (contoh: `global_trade`), lalu jalankan perintah ini untuk membangun tabel dan memuat data awal (*Dummy Data*).
+### 4. Jalankan Migration dan Seeder
+Pastikan Anda telah membuat database MySQL yang sesuai di file `.env`, lalu jalankan perintah ini untuk membangun tabel dan memuat data awal yang diperlukan aplikasi:
 ```bash
 php artisan migrate
 php artisan db:seed
 ```
 
-### 5. Kompilasi Aset Frontend (NPM)
+### 5. Install Dependency Frontend
 ```bash
 npm install
 npm run dev
 ```
 
-### 6. Menjalankan Laravel Development Server
+### 6. Menjalankan Development Server
 ```bash
 php artisan serve
 ```
 
 ---
 
-## 📂 Struktur Project
+## 📁 Struktur Project
 
-Gambaran garis besar struktur fail dan direktori kunci pada *platform* ini:
+Gambaran garis besar struktur direktori pada project ini:
 
 ```text
 /
-├── app/                  # Direktori Model, Controller, Middleware, & algoritma Logika.
-├── bootstrap/            # Skrip pemuat awal (*Bootstrapping*) framework Laravel.
-├── config/               # Kumpulan konfigurasi aplikasi & sistem integrasi API.
-├── database/             # Skema Migrasi, pengaturan Seeder, serta pola basis data.
-├── public/               # Titik awal eksekusi, serta penyimpanan aset statis (CSS/JS/Gambar).
-├── resources/            # Aset mentah (Sass, Vue/React) dan berkas tampilan Blade (*Views*).
-├── routes/               # Deklarasi penjaluran (*Routing*), meliputi web.php & api.php.
-└── storage/              # Repositori tembolok (*Cache*), sesi (*Session*), dan pengunggahan berkas.
+├── app/                  # Model, controller, service, middleware, dan logika aplikasi
+├── bootstrap/            # Script untuk proses booting framework
+├── config/               # File konfigurasi aplikasi
+├── database/             # Migrations dan seeders database
+├── public/               # Titik awal eksekusi (entry point) dan aset statis (CSS/JS/Gambar)
+├── resources/            # Blade views dan resource frontend lainnya
+├── routes/               # Deklarasi penjaluran (routes) aplikasi
+└── storage/              # File logs, cache, sessions, dan file-file yang di-generate aplikasi
 ```
 
 ---
 
 ## 🗺️ Roadmap Pengembangan Masa Depan
 
-Kami memiliki visi untuk terus mempertajam dan memperluas kapabilitas intelijen pada *platform* ini:
+Daftar rencana pengembangan fitur untuk sistem ini:
 
-- [ ] **AI Recommendation**: Mesin penasihat otomatis rute substitusi berbasis *Deep Learning*.
-- [ ] **Advanced Analytics**: Modul analisis silang parameter tingkat lanjut.
-- [ ] **Historical Risk Trends**: Grafik proyeksi dan komparasi tren risiko jangka panjang.
-- [ ] **Email Notification**: Lansiran sistem (*Alert*) langsung menuju kotak masuk surel.
-- [ ] **Export Enhancement**: Ekspansi dukungan unduhan *Report* (CSV/PDF) yang komprehensif.
+- [x] **Trade Recommendation**: Mesin rekomendasi rute substitusi berbasis perhitungan algoritma dan indikator risiko (Trade Planner).
+- [ ] **Advanced Analytics**: Modul analisis silang indikator lanjutan.
+- [ ] **Historical Risk Trends**: Grafik proyeksi dan perbandingan tren risiko jangka panjang.
+- [ ] **Email Notification**: Notifikasi atau pemberitahuan *alert* sistem ke email pengguna.
+- [x] **Export Enhancement**: Dukungan unduhan *report* laporan (CSV/PDF/Excel) yang komprehensif untuk semua modul.
 
 ---
 
 ## 👤 Author
 
 Nama: Amanda Gita Syafitri
-Kelas: A3
