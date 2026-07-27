@@ -476,25 +476,28 @@ class ReportExportController extends Controller
     // ==========================================
     private function getWatchListData($isPdf = false)
     {
-        $query = WatchList::with('watchable');
+        $query = WatchList::with(['country', 'port', 'route']);
         if ($isPdf) $query->take(300);
         $watchlist = $query->get();
         $data = [];
         foreach($watchlist as $w) {
-            $name = 'Unknown';
-            if ($w->watchable_type == \App\Models\Country::class) {
-                $name = $w->watchable->country_name ?? 'Country';
-            } elseif ($w->watchable_type == \App\Models\Port::class) {
-                $name = $w->watchable->port_name ?? 'Port';
+            $name = 'N/A';
+            if ($w->watch_type === 'country') {
+                $name = $w->country->country_name ?? 'N/A';
+            } elseif ($w->watch_type === 'port') {
+                $name = $w->port->name ?? 'N/A';
+            } elseif ($w->watch_type === 'route') {
+                $name = $w->route->name ?? 'N/A';
             }
+            
             $data[] = [
-                'watch_type' => class_basename($w->watchable_type),
+                'watch_type' => $w->watch_type !== null ? ucfirst($w->watch_type) : 'N/A',
                 'name' => $name,
-                'current_risk' => 'Medium',
-                'weather' => 'Clear',
-                'currency' => 'Stable',
-                'monitoring_status' => 'Active',
-                'added_date' => $w->created_at->format('Y-m-d')
+                'current_risk' => 'N/A',
+                'weather' => 'N/A',
+                'currency' => 'N/A',
+                'monitoring_status' => $w->status !== null ? ucfirst($w->status) : 'N/A',
+                'added_date' => $w->created_at !== null ? $w->created_at->format('Y-m-d') : 'N/A'
             ];
         }
         return $data;
