@@ -3,10 +3,10 @@
 @section('title', 'Ports Report')
 
 @section('export_buttons')
-    <a href="{{ route('reports.ports.pdf') }}" class="btn btn-danger">
+    <a href="{{ route('ports.pdf') }}" class="btn btn-danger">
         Export PDF
     </a>
-    <a href="{{ route('reports.ports.excel') }}" class="btn btn-success">
+    <a href="{{ route('ports.excel') }}" class="btn btn-success">
         Export Excel
     </a>
 @endsection

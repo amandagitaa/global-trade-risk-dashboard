@@ -3,10 +3,10 @@
 @section('title', 'Weather Report')
 
 @section('export_buttons')
-    <a href="{{ route('reports.weather.pdf') }}" class="btn btn-danger">
+    <a href="{{ route('weather.pdf') }}" class="btn btn-danger">
         Export PDF
     </a>
-    <a href="{{ route('reports.weather.excel') }}" class="btn btn-success">
+    <a href="{{ route('weather.excel') }}" class="btn btn-success">
         Export Excel
     </a>
 @endsection

@@ -3,10 +3,10 @@
 @section('title', 'Watch List Report')
 
 @section('export_buttons')
-    <a href="{{ route('reports.watch-list.pdf') }}" class="btn btn-danger">
+    <a href="{{ route('watch-list.pdf') }}" class="btn btn-danger">
         Export PDF
     </a>
-    <a href="{{ route('reports.watch-list.excel') }}" class="btn btn-success">
+    <a href="{{ route('watch-list.excel') }}" class="btn btn-success">
         Export Excel
     </a>
 @endsection
