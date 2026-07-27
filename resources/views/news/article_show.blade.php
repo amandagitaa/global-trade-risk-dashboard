@@ -31,7 +31,7 @@
                     </div>
 
                     <div class="article-content fs-5" style="line-height: 1.8;">
-                        {!! nl2br(e($article->content)) !!}
+                        {!! $article->content !!}
                     </div>
 
                 </div>
